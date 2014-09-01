@@ -1,0 +1,4 @@
+/web/modules/*
+/lua/**/*.js
+/lua/**/*.o
+/lua/**/*.so
