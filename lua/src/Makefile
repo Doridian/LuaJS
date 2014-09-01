@@ -62,6 +62,7 @@ BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_jslua_push_number',\
 '_jslua_push_string',\
 '_jslua_call',\
+'_lua_settable'\
 ]" -s TOTAL_MEMORY=134217728
 
 ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O) $(BINARY_O)
