@@ -132,7 +132,7 @@ exports = (function() {
 
 	inherit(LuaFunction, LuaReference);
 
-	LuaFunction.prototype.call = function(noreturn) {
+	LuaFunction.prototype.call = function() {
 		this.push(this.state);
 		
 		var validArgCount = 0;
@@ -142,13 +142,10 @@ exports = (function() {
 		}
 		
 		var stack = lua_call(this.state, validArgCount);
-		var ret = null;
-		if(stack < 0 || !noreturn)
-			ret = decode_stack(this.state, Math.abs(stack));
+		var ret = decode_stack(this.state, Math.abs(stack));
 		lua_empty_stack();
-		if (stack < 0) {
+		if (stack < 0)
 			throw new LuaError(ret[0]);
-		}
 		return ret;
 	}
 	
@@ -183,11 +180,9 @@ exports = (function() {
 		lua_delete_state(this.state);
 	}
 
-	LuaState.prototype.run = function(code, noreturn) {
+	LuaState.prototype.run = function(code) {
 		var stack = lua_execute(this.state, code);
-		var ret = null;
-		if(stack < 0 || !noreturn)
-			ret = decode_stack(this.state, Math.abs(stack));
+		var ret = decode_stack(this.state, Math.abs(stack));
 		lua_empty_stack();
 		if (stack < 0) {
 			throw new LuaError(ret[0]);
@@ -206,7 +201,7 @@ exports = (function() {
 		
 		return ajaxPromise('modules/' + libname + extension).then(function(data) {
 			FS.createDataFile(MOD_PATH[type], libname + extension, data, true, true);
-			self.run(libname + ' = require"' + libname + '"', true);
+			self.run(libname + ' = require"' + libname + '"');
 		});
 	}
 
