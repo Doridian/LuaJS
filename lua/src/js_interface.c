@@ -9,15 +9,7 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-#include <emscripten.h>
-
-int jslua_get_stack_size(lua_State *L) {
-	return lua_gettop(L);
-}
-
-int jslua_get_type(lua_State *L) {
-	return lua_type(L, -1);
-}
+#include <emscripten.h> 
 
 void jslua_pop_top(lua_State *L) {
 	lua_pop(L, 1);
@@ -47,7 +39,8 @@ void jslua_push_number(lua_State *L, double num) {
 	lua_pushnumber(L, num);
 }
 
-int jslua_pop_ref(lua_State *L) {
+int jslua_toref(lua_State *L, int index) {
+	lua_pushvalue(L, index);
 	return luaL_ref(L, LUA_REGISTRYINDEX);
 }
 

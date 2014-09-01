@@ -49,20 +49,29 @@ BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_main',\
 '_jslua_execute',\
 '_jslua_get_stack_size',\
-'_jslua_get_type',\
 '_jslua_pop_string',\
 '_jslua_pop_number',\
-'_jslua_pop_top',\
 '_jslua_empty_stack',\
 '_jslua_new_state',\
 '_jslua_delete_state',\
-'_jslua_pop_ref',\
+'_jslua_toref',\
 '_jslua_push_ref',\
 '_jslua_unref',\
 '_jslua_push_number',\
 '_jslua_push_string',\
 '_jslua_call',\
-'_lua_settable'\
+'_lua_gettable',\
+'_lua_settable',\
+'_lua_createtable',\
+'_lua_pushvalue',\
+'_lua_pushnil',\
+'_lua_next',\
+'_lua_tolstring',\
+'_lua_type',\
+'_lua_setmetatable',\
+'_lua_getmetatable',\
+'_lua_tonumber',\
+'_lua_settop',\
 ]" -s TOTAL_MEMORY=134217728
 
 ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O) $(BINARY_O)
