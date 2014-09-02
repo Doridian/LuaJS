@@ -1,5 +1,4 @@
 exports = (function() {
-
 	function inherit(childClass, parentClass) {
 		childClass.prototype = Object.create(parentClass.prototype);
 		childClass.prototype.constructor = childClass;
@@ -36,6 +35,8 @@ exports = (function() {
 	var lua_push_string = Module.cwrap("jslua_push_string", "", ["number", "string"]);
 	var lua_pop_number = Module.cwrap("jslua_pop_number", "number", ["number"]);
 	var lua_push_number = Module.cwrap("jslua_push_number", "", ["number", "number"]);
+	
+	var lua_push_function = Module.cwrap("jslua_push_function", "", ["number", "number"]);
 	
 	var lua_gettable = Module.cwrap("lua_gettable", "", ["number", "number"]);
 	var lua_settable = Module.cwrap("lua_settable", "", ["number", "number"]);
@@ -147,6 +148,9 @@ exports = (function() {
 				break;
 			case "string":
 				lua_push_string(state, arg);
+				break;
+			case "function":
+				lua_push_function(state, Runtime.addFunction(arg));
 				break;
 			case "object":
 				if(arg instanceof LuaReference)

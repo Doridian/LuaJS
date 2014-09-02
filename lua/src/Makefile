@@ -60,6 +60,7 @@ BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_jslua_push_number',\
 '_jslua_push_string',\
 '_jslua_call',\
+'_jslua_push_function',\
 '_lua_gettable',\
 '_lua_settable',\
 '_lua_createtable',\

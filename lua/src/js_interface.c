@@ -19,6 +19,21 @@ void jslua_empty_stack(lua_State *L) {
 	lua_settop(L, 0);
 }
 
+enum DataType {
+	TYPE_JSFUNCTION
+};
+
+struct TypedPointerData {
+	int type;
+	void *ptr;
+};
+
+void jslua_push_function(lua_State *L, void *funcpointer) {
+	struct TypedPointerData *a = (struct TypedPointerData *)lua_newuserdata(L, sizeof(struct TypedPointerData));
+	a->ptr = funcpointer;
+	a->type = TYPE_JSFUNCTION;
+}
+
 const char* jslua_pop_string(lua_State *L) {
 	const char *str = lua_tostring(L, -1);
 	lua_pop(L, 1);
@@ -53,6 +68,8 @@ void jslua_unref(lua_State *L, int index) {
 }
 
 int jslua_call(lua_State *L, int argcount) {
+	int stack = lua_gettop(L) - (argcount + 1);
+	
 	int errindex = -argcount - 2;
 	
 	lua_getglobal(L, "debug");
@@ -62,10 +79,10 @@ int jslua_call(lua_State *L, int argcount) {
 	
 	if (lua_pcall(L, argcount, LUA_MULTRET, errindex)) {
 		lua_remove(L, 1);
-		return -lua_gettop(L);
+		return -(lua_gettop(L) - stack);
 	}
 	lua_remove(L, 1);
-	return lua_gettop(L);
+	return lua_gettop(L) - stack;
 }
 
 int jslua_execute(lua_State *L, char* str) {
