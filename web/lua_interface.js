@@ -58,6 +58,8 @@ exports = (function() {
 	var lua_getmetatable = Module.cwrap("lua_getmetatable", "number", ["number", "number"]);
 	var lua_setmetatable = Module.cwrap("lua_setmetatable", "number", ["number", "number"]);
 	
+	var lua_state_tbl = {};
+	
 	function lua_pop(state, n) {
 		lua_settop(state, -n-1);
 	}
@@ -142,12 +144,16 @@ exports = (function() {
 		return ret;
 	}
 	
-	var luaPassedVars = [];
+	var luaLastRefIdx = -1;
+	var luaPassedVars = {};
 	
 	function luaGetVarPtr(varObj) {
-		var i = luaPassedVars.length;
-		luaPassedVars.push(varObj);
-		return i;
+		luaPassedVars[++luaLastRefIdx] = varObj;
+		return luaLastRefIdx;
+	}
+	
+	function luaRemoveVarPtr(varPtr) {
+		delete luaPassedVars[varPtr];
 	}
 	
 	function push_var(state, arg) {
@@ -201,7 +207,7 @@ exports = (function() {
 		return luaCallFunction(luaPassedVars[funcPtr], state, stack_size);
 	}
 	
-	Module.ccall("__jslua_set_cfp", "", ["number"], [Runtime.addFunction(luaCallFunctionPointer)]);
+	Module.ccall("__jslua_set_fp", "", ["number", "number"], [Runtime.addFunction(luaCallFunctionPointer), Runtime.addFunction(luaRemoveVarPtr)]);
 	
 	//LuaError
 	function LuaError(msg) {
@@ -215,16 +221,38 @@ exports = (function() {
 	function LuaReference(state, index) {
 		this.state = state;
 		this.index = index;
+		
+		var oldRef = lua_state_tbl[state].refArray[index];
+		if(oldRef)
+			oldRef.unref();
+		lua_state_tbl[state].refArray[index] = this;
 	}
 
 	LuaReference.prototype.unref = function() {
 		lua_unref(this.state, this.index);
+		delete lua_state_tbl[this.state].refArray[this.index];
+		this.index = null;
+		this.state = null;
 	}
 
 	LuaReference.prototype.push = function(state) {
 		if(state && state != this.state)
 			throw new Error("Wrong Lua state");
 		lua_push_ref(this.state, this.index);
+	}
+	
+	LuaReference.prototype.getmetatable = function() {
+		this.push();
+		lua_getmetatable(this.state, -1);
+		var ret = decode_single(this.state, -1);
+		lua_pop(this.state, 1);
+		return ret;
+	}
+	
+	LuaReference.prototype.setmetatable = function() {
+		this.push();
+		lua_setmetatable(this.state, -1);
+		lua_pop(this.state, 1);
 	}
 
 	//LuaFunction
@@ -280,7 +308,7 @@ exports = (function() {
 		return ret;
 	}
 	
-	LuaTable.prototype.toObject = function() {
+	LuaTable.prototype.toObject = function(recurse, maxDepth) {
 		this.push();
 		lua_pushnil(this.state);
 		var ret = {}
@@ -292,30 +320,43 @@ exports = (function() {
 			lua_pop(this.state, 2);
 		}
 		lua_pop(this.state, 1);
+		
+		if(!maxDepth)
+			maxDepth = 10;
+		
+		if(recurse && maxDepth > 0) {
+			maxDepth--;
+			
+			for(var idx in ret) {
+				var val = ret[idx];
+				if(val instanceof LuaTable)
+					ret[idx] = val.toObject(true, maxDepth);
+			}
+		}
+		
 		return ret;
-	}
-	
-	LuaTable.prototype.getmetatable = function() {
-		this.push();
-		lua_getmetatable(this.state, -1);
-		var ret = decode_single(this.state, -1);
-		lua_pop(this.state, 1);
-		return ret;
-	}
-	
-	LuaTable.prototype.setmetatable = function() {
-		this.push();
-		lua_setmetatable(this.state, -1);
-		lua_pop(this.state, 1);
 	}
 
 	//LuaState
 	function LuaState() {
 		this.state = lua_new_state();
+		this.refArray = {};
+		lua_state_tbl[this.state] = this;
+	}
+	
+	LuaState.prototype.unrefAll = function() {
+		for(idx in this.refArray) {
+			var ref = this.refArray[idx];
+			ref.unref();
+		}
+		this.refArray = {};
 	}
 
 	LuaState.prototype.close = function() {
+		this.unrefAll();
 		lua_delete_state(this.state);
+		delete lua_state_tbl[this.state];
+		this.state = null;
 	}
 
 	LuaState.prototype.run = function(code) {

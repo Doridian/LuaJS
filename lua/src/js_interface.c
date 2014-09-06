@@ -16,11 +16,14 @@ int json_encode(lua_State *l);
 int luaopen_cjson(lua_State *l);
 
 typedef char* (*LUA_CFP)(void* funcPtr, lua_State *L, int stack_size);
+typedef char* (*LUA_RVP)(void* varPtr);
 
 LUA_CFP luaCallFunctionPointer;
+LUA_RVP luaRemoveVarPtr;
 
-void __jslua_set_cfp(LUA_CFP fp) {
-	luaCallFunctionPointer = fp;
+void __jslua_set_fp(LUA_CFP cfp, LUA_RVP rfp) {
+	luaCallFunctionPointer = cfp;
+	luaRemoveVarPtr = rfp;
 }
 
 void jslua_pop_top(lua_State *L) {
@@ -36,10 +39,27 @@ struct TypedPointerData {
 	void *ptr;
 };
 
+#define GET_LIB_GLOBAL(LIB, NAME) {\
+	lua_getglobal(L, LIB); \
+	lua_pushstring(L, NAME); \
+	lua_rawget(L, -2); \
+}
+	
+#define GET_LIB_GLOBAL_END() \
+	lua_pop(L, 1);
+
 void jslua_push_jsvar(lua_State *L, void *varptr, int type) {
 	struct TypedPointerData *data = (struct TypedPointerData*)lua_newuserdata(L, sizeof(struct TypedPointerData));
 	data->ptr = varptr;
 	data->type = type;
+	
+	if(type == TYPE_JSFUNCTION)
+		GET_LIB_GLOBAL("js", "__mt_js_function")
+	else
+		GET_LIB_GLOBAL("js", "__mt_js_object")
+	
+	lua_setmetatable(L, -3);
+	GET_LIB_GLOBAL_END();
 }
 
 const char* jslua_pop_string(lua_State *L) {
@@ -118,14 +138,6 @@ static int luajs_eval(lua_State *L) {
 	return 1;
 }
 
-#define GET_LIB_GLOBAL(LIB, NAME) \
-	lua_getglobal(L, LIB); \
-	lua_pushstring(L, NAME); \
-	lua_rawget(L, -2);
-	
-#define GET_LIB_GLOBAL_END() \
-	lua_pop(L, 2);
-
 static int luajs_call(lua_State *L) {
 	struct TypedPointerData *data = (struct TypedPointerData*)lua_touserdata(L, 1);
 	lua_remove(L, 1);
@@ -140,15 +152,24 @@ static int luajs_call(lua_State *L) {
 	return 1;
 }
 
+static int luajs_jsobject__gc(lua_State *L) {
+	struct TypedPointerData *data = (struct TypedPointerData*)lua_touserdata(L, -1);
+	lua_pop(L, 1);
+	luaRemoveVarPtr(data->ptr);
+	return 0;
+}
+
 lua_State* jslua_new_state() {
 	lua_State* L = luaL_newstate();  /* create state */
 	lua_gc(L, LUA_GCSTOP, 0);  /* stop collector during initialization */
 	luaL_openlibs(L);  /* open libraries */
 	lua_gc(L, LUA_GCRESTART, 0);
 	
+	//Load CJSON
 	luaopen_cjson(L);
 	lua_setglobal(L, "json");
 	
+	//Load myself
 	lua_newtable(L);
 	
 	lua_pushstring(L, "eval");
@@ -159,7 +180,35 @@ lua_State* jslua_new_state() {
 	lua_pushcfunction(L, luajs_call);
 	lua_rawset(L, -3);
 	
+	//Create metatables (object)
+	lua_pushstring(L, "__mt_js_object");
+	lua_newtable(L);
+	
+	lua_pushstring(L, "__gc");
+	lua_pushcfunction(L, luajs_jsobject__gc);
+	lua_rawset(L, -3);
+	
+	lua_rawset(L, -3);
+	//END: Create metatables
+	
+	//Create metatables (function)
+	lua_pushstring(L, "__mt_js_function");
+	lua_newtable(L);
+	
+	lua_pushstring(L, "__gc");
+	lua_pushcfunction(L, luajs_jsobject__gc);
+	lua_rawset(L, -3);
+	
+	lua_pushstring(L, "__call");
+	lua_pushcfunction(L, luajs_call);
+	lua_rawset(L, -3);
+	
+	lua_rawset(L, -3);
+	//END: Create metatables
+	
+	
 	lua_setglobal(L, "js");
+	//END: Load myself
 	
 	return L;
 }
