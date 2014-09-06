@@ -61,6 +61,7 @@ BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_jslua_push_string',\
 '_jslua_call',\
 '_jslua_push_function',\
+'___jslua_set_cfp',\
 '_lua_gettable',\
 '_lua_settable',\
 '_lua_createtable',\
@@ -73,7 +74,7 @@ BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_lua_getmetatable',\
 '_lua_tonumber',\
 '_lua_settop',\
-]" -s TOTAL_MEMORY=134217728
+]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=128
 
 ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O) $(BINARY_O)
 ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T) $(BINARY_T)

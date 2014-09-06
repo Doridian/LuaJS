@@ -11,16 +11,22 @@
 
 #include <emscripten.h> 
 
+typedef char* (*LUA_CFP)(void* funcPtr, lua_State *L, int stack_size);
+
+LUA_CFP luaCallFunctionPointer;
+
+void __jslua_set_cfp(LUA_CFP fp) {
+	luaCallFunctionPointer = fp;
+}
+
 void jslua_pop_top(lua_State *L) {
 	lua_pop(L, 1);
 }
 
-void jslua_empty_stack(lua_State *L) {
-	lua_settop(L, 0);
-}
-
 enum DataType {
-	TYPE_JSFUNCTION
+	TYPE_JSFUNCTION,
+	TYPE_JSARRAY,
+	TYPE_JSOBJECT
 };
 
 struct TypedPointerData {
@@ -29,9 +35,9 @@ struct TypedPointerData {
 };
 
 void jslua_push_function(lua_State *L, void *funcpointer) {
-	struct TypedPointerData *a = (struct TypedPointerData *)lua_newuserdata(L, sizeof(struct TypedPointerData));
-	a->ptr = funcpointer;
-	a->type = TYPE_JSFUNCTION;
+	struct TypedPointerData *data = (struct TypedPointerData*)lua_newuserdata(L, sizeof(struct TypedPointerData));
+	data->ptr = funcpointer;
+	data->type = TYPE_JSFUNCTION;
 }
 
 const char* jslua_pop_string(lua_State *L) {
@@ -94,11 +100,63 @@ int jslua_execute(lua_State *L, char* str) {
 	return jslua_call(L, 0);
 }
 
+static int luajs_eval(lua_State *L) {
+	const char *str = lua_tostring(L, -1);
+	lua_pop(L, 1);
+	char *ret = (char*)EM_ASM_INT({
+		var code = Pointer_stringify($0);
+		console.log(code);
+		var retJS = JSON.stringify(eval(code));
+		if(!retJS)
+			retJS = "";
+		ret = Runtime.stackAlloc(retJS.length + 1);
+		writeStringToMemory(retJS, ret);
+		return ret;
+	}, str);
+	lua_pushstring(L, ret);
+	return 1;
+}
+
+#define GET_JS_GLOBAL(TYPE, NAME) \
+	lua_getglobal(L, "js"); \
+	lua_pushstring(L, NAME); \
+	lua_rawget(L, -2); \
+	lua_to##TYPE(L, -1); \
+	lua_pop(L, 2);
+
+static int luajs_call(lua_State *L) {
+	struct TypedPointerData *data = (struct TypedPointerData*)lua_touserdata(L, 1);
+	lua_remove(L, 1);
+	
+	if(data->type != TYPE_JSFUNCTION) {
+		lua_pushstring(L, "Invalid type");
+		lua_error(L);
+		return 1;
+	}
+	
+	luaCallFunctionPointer(data->ptr, L, lua_gettop(L));
+	
+	return 0;
+}
+
 lua_State* jslua_new_state() {
 	lua_State* L = luaL_newstate();  /* create state */
 	lua_gc(L, LUA_GCSTOP, 0);  /* stop collector during initialization */
 	luaL_openlibs(L);  /* open libraries */
 	lua_gc(L, LUA_GCRESTART, 0);
+	
+	lua_newtable(L);
+	
+	lua_pushstring(L, "eval");
+	lua_pushcfunction(L, luajs_eval);
+	lua_rawset(L, -3);
+	
+	lua_pushstring(L, "call");
+	lua_pushcfunction(L, luajs_call);
+	lua_rawset(L, -3);
+	
+	lua_setglobal(L, "js");
+	
 	return L;
 }
 

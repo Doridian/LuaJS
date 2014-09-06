@@ -25,7 +25,6 @@ exports = (function() {
 
 	var lua_settop = Module.cwrap("lua_settop", "", ["number", "number"]);
 	
-	var lua_empty_stack = Module.cwrap("jslua_empty_stack", "", ["number"]);
 	var lua_type = Module.cwrap("lua_type", "number", ["number", "number"]);
 
 	var lua_new_state = Module.cwrap("jslua_new_state", "number", []);
@@ -131,6 +130,33 @@ exports = (function() {
 		return ret;
 	}
 	
+	var luaPassedFunctions = [];
+	
+	function luaGetFunctionPtr(funcName) {
+		var i = luaPassedFunctions.length;
+		luaPassedFunctions.push(funcName);
+		return i;
+	}
+	
+	function luaCallFunction(func, state, stack_size) {
+		var variables = decode_stack(state, stack_size);
+		return JSON.stringify(func.apply(null, variables));
+	}
+	
+	function luaEval(str, state, stack_size) {
+		return luaCallFunction(function() { eval(str); }, state, stack_size);
+	}
+	
+	function luaCallFunctionString(funcDef, state, stack_size) {
+		return luaCallFunction(eval(funcDef), state, stack_size);
+	}
+	
+	function luaCallFunctionPointer(funcPtr, state, stack_size) {
+		return luaCallFunction(luaPassedFunctions[funcPtr], state, stack_size);
+	}
+	
+	Module.ccall("__jslua_set_cfp", "", ["number"], [Runtime.addFunction(luaCallFunctionPointer)]);
+	
 	function push_var(state, arg) {
 		if(arg === null) {
 			lua_pushnil(state);
@@ -150,7 +176,7 @@ exports = (function() {
 				lua_push_string(state, arg);
 				break;
 			case "function":
-				lua_push_function(state, Runtime.addFunction(arg));
+				lua_push_function(state, luaGetFunctionPtr(arg));
 				break;
 			case "object":
 				if(arg instanceof LuaReference)
@@ -347,10 +373,12 @@ exports = (function() {
 			subtree: true
 		});		
 	}
+	
 	return {
 		LuaState: LuaState,
 		LuaFunction: LuaFunction,
-		LuaReference: LuaReference
+		LuaReference: LuaReference,
+		GetLuaFunctionPointer: luaGetFunctionPtr,
 	};  
 })();
 
