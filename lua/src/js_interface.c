@@ -125,22 +125,18 @@ int jslua_execute(lua_State *L, char* str) {
 static int luajs_eval(lua_State *L) {
 	const char *str = lua_tostring(L, -1);
 	lua_pop(L, 1);
-	char *ret = (char*)EM_ASM_INT({
-		var code = Pointer_stringify($0);
-		var retJS = JSON.stringify(eval(code));
-		if(!retJS)
-			retJS = "";
-		ret = Runtime.stackAlloc(retJS.length + 1);
-		writeStringToMemory(retJS, ret);
-		return ret;
-	}, str);
-	lua_pushstring(L, ret);
-	return 1;
+	return EM_ASM_INT({
+		__luajs_push_var($0, eval(Pointer_stringify($1)));
+		return 1;
+	}, L, str);
 }
 
-static int luajs_call(lua_State *L) {
-	struct TypedPointerData *data = (struct TypedPointerData*)lua_touserdata(L, 1);
+#define GET_TypedPointerData() \
+	struct TypedPointerData *data = (struct TypedPointerData*)lua_touserdata(L, 1); \
 	lua_remove(L, 1);
+
+static int luajs_call(lua_State *L) {
+	GET_TypedPointerData();
 	
 	if(data->type != TYPE_JSFUNCTION) {
 		lua_pushstring(L, "Invalid type");
@@ -153,10 +149,19 @@ static int luajs_call(lua_State *L) {
 }
 
 static int luajs_jsobject__gc(lua_State *L) {
-	struct TypedPointerData *data = (struct TypedPointerData*)lua_touserdata(L, -1);
-	lua_pop(L, 1);
+	GET_TypedPointerData();
 	luaRemoveVarPtr(data->ptr);
 	return 0;
+}
+
+static int luajs_jsobject__index(lua_State *L) {
+	GET_TypedPointerData();
+	const char *str = lua_tostring(L, -1);
+	lua_pop(L, 1);
+	return EM_ASM_INT({
+		__luajs_push_var_ref($0, Pointer_stringify($1));
+		return 1;
+	}, data->ptr, str);
 }
 
 lua_State* jslua_new_state() {
@@ -186,6 +191,10 @@ lua_State* jslua_new_state() {
 	
 	lua_pushstring(L, "__gc");
 	lua_pushcfunction(L, luajs_jsobject__gc);
+	lua_rawset(L, -3);
+	
+	lua_pushstring(L, "__index");
+	lua_pushcfunction(L, luajs_jsobject__index);
 	lua_rawset(L, -3);
 	
 	lua_rawset(L, -3);

@@ -1,3 +1,5 @@
+var __luajs_push_var;
+
 exports = (function() {
 	function inherit(childClass, parentClass) {
 		childClass.prototype = Object.create(parentClass.prototype);
@@ -188,6 +190,12 @@ exports = (function() {
 			default:
 				throw new LuaError("Unhandled value push: " + arg);
 		}
+	}
+	
+	__luajs_push_var = push_var;
+	
+	function __luajs_push_var_ref(index, key) {
+		push_var(luaPassedVars[index][key]);
 	}
 	
 	function luaCallFunction(func, state, stack_size) {
@@ -435,6 +443,8 @@ exports = (function() {
 		LuaState: LuaState,
 		LuaFunction: LuaFunction,
 		LuaReference: LuaReference,
+		__luajs_push_var: __luajs_push_var,
+		__luajs_push_var_ref: __luajs_push_var_ref,
 	};  
 })();
 
