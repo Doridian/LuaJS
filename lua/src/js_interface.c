@@ -11,6 +11,10 @@
 
 #include <emscripten.h> 
 
+int json_decode(lua_State *l);
+int json_encode(lua_State *l);
+int luaopen_cjson(lua_State *l);
+
 typedef char* (*LUA_CFP)(void* funcPtr, lua_State *L, int stack_size);
 
 LUA_CFP luaCallFunctionPointer;
@@ -105,7 +109,6 @@ static int luajs_eval(lua_State *L) {
 	lua_pop(L, 1);
 	char *ret = (char*)EM_ASM_INT({
 		var code = Pointer_stringify($0);
-		console.log(code);
 		var retJS = JSON.stringify(eval(code));
 		if(!retJS)
 			retJS = "";
@@ -117,11 +120,12 @@ static int luajs_eval(lua_State *L) {
 	return 1;
 }
 
-#define GET_JS_GLOBAL(TYPE, NAME) \
-	lua_getglobal(L, "js"); \
+#define GET_LIB_GLOBAL(LIB, NAME) \
+	lua_getglobal(L, LIB); \
 	lua_pushstring(L, NAME); \
-	lua_rawget(L, -2); \
-	lua_to##TYPE(L, -1); \
+	lua_rawget(L, -2);
+	
+#define GET_LIB_GLOBAL_END() \
 	lua_pop(L, 2);
 
 static int luajs_call(lua_State *L) {
@@ -134,9 +138,13 @@ static int luajs_call(lua_State *L) {
 		return 1;
 	}
 	
-	luaCallFunctionPointer(data->ptr, L, lua_gettop(L));
+	char* jsonRes = luaCallFunctionPointer(data->ptr, L, lua_gettop(L));
 	
-	return 0;
+	GET_LIB_GLOBAL("json", "decode");
+	lua_pushstring(L, jsonRes);
+	lua_call(L, 1, 1);
+	lua_remove(L, 1);
+	return 1;
 }
 
 lua_State* jslua_new_state() {
@@ -144,6 +152,9 @@ lua_State* jslua_new_state() {
 	lua_gc(L, LUA_GCSTOP, 0);  /* stop collector during initialization */
 	luaL_openlibs(L);  /* open libraries */
 	lua_gc(L, LUA_GCRESTART, 0);
+	
+	luaopen_cjson(L);
+	lua_setglobal(L, "json");
 	
 	lua_newtable(L);
 	

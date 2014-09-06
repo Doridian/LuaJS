@@ -44,7 +44,7 @@ LUAC_T=	luac
 LUAC_O=	luac.o
 
 BINARY_T=js_interface.js
-BINARY_O=js_interface.o
+BINARY_O=js_interface.o json/cjson.so
 BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_main',\
 '_jslua_execute',\
@@ -74,6 +74,8 @@ BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_lua_getmetatable',\
 '_lua_tonumber',\
 '_lua_settop',\
+'_lua_gettop',\
+'_lua_tonumberx',\
 ]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=128
 
 ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O) $(BINARY_O)
@@ -98,6 +100,9 @@ $(LUA_T): $(LUA_O) $(LUA_A)
 
 $(LUAC_T): $(LUAC_O) $(LUA_A)
 	$(CC) -o $@ $(LDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
+
+json/cjson.so: $(LUA_A)
+	cd json && $(MAKE)
 
 $(BINARY_T): $(BINARY_O) $(LUA_A)
 	$(CC) -o $@ $(LDFLAGS) $(BINARY_O) $(LUA_A) $(LIBS) $(BINARY_ARGS)

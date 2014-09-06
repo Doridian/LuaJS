@@ -24,6 +24,7 @@ exports = (function() {
 	var lua_call = Module.cwrap("jslua_call", "number", ["number", "number"]);
 
 	var lua_settop = Module.cwrap("lua_settop", "", ["number", "number"]);
+	var lua_gettop = Module.cwrap("lua_gettop", "number", ["number"]);
 	
 	var lua_type = Module.cwrap("lua_type", "number", ["number", "number"]);
 
@@ -51,7 +52,8 @@ exports = (function() {
 	
 	var lua_next = Module.cwrap("lua_next", "", ["number", "number"]);
 	
-	var lua_tolstring = Module.cwrap("lua_tolstring", "string", ["number", "number"]);
+	var lua_tolstring = Module.cwrap("lua_tolstring", "string", ["number", "number", "number"]);
+	var lua_tonumberx = Module.cwrap("lua_tonumberx", "number", ["number", "number", "number"]);
 	
 	var lua_getmetatable = Module.cwrap("lua_getmetatable", "number", ["number", "number"]);
 	var lua_setmetatable = Module.cwrap("lua_setmetatable", "number", ["number", "number"]);
@@ -72,6 +74,10 @@ exports = (function() {
 	
 	function lua_tostring(a, b) {
 		return lua_tolstring(a, b, 0);
+	}
+	
+	function lua_tonumber(state, i) {
+		return lua_tonumberx(state, i, 0);
 	}
 	
 	var luaTypes = {
@@ -125,7 +131,7 @@ exports = (function() {
 		var ret = [];
 		for(var i = 0; i < stack_size; i++) {
 			ret.unshift(decode_single(state, -1));
-			lua_pop_top();
+			lua_pop_top(state);
 		}
 		return ret;
 	}
@@ -140,7 +146,14 @@ exports = (function() {
 	
 	function luaCallFunction(func, state, stack_size) {
 		var variables = decode_stack(state, stack_size);
-		return JSON.stringify(func.apply(null, variables));
+		
+		var retJS = JSON.stringify(func.apply(null, variables));
+		if(!retJS)
+			retJS = "";
+			
+		ret = Runtime.stackAlloc(retJS.length + 1);
+		writeStringToMemory(retJS, ret);
+		return ret;
 	}
 	
 	function luaEval(str, state, stack_size) {
