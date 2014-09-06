@@ -148,6 +148,7 @@ exports = (function() {
 	
 	var luaLastRefIdx = -1;
 	var luaPassedVars = {};
+	luaPassedVars[-1] = window;
 	
 	function luaGetVarPtr(varObj) {
 		luaPassedVars[++luaLastRefIdx] = varObj;

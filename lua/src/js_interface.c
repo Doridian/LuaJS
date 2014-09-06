@@ -15,8 +15,8 @@ int json_decode(lua_State *l);
 int json_encode(lua_State *l);
 int luaopen_cjson(lua_State *l);
 
-typedef char* (*LUA_CFP)(void* funcPtr, lua_State *L, int stack_size);
-typedef char* (*LUA_RVP)(void* varPtr);
+typedef char* (*LUA_CFP)(int funcPtr, lua_State *L, int stack_size);
+typedef char* (*LUA_RVP)(int varPtr);
 
 LUA_CFP luaCallFunctionPointer;
 LUA_RVP luaRemoveVarPtr;
@@ -36,7 +36,7 @@ void jslua_pop_top(lua_State *L) {
 
 struct TypedPointerData {
 	int type;
-	void *ptr;
+	int ptr;
 };
 
 #define GET_LIB_GLOBAL(LIB, NAME) {\
@@ -48,7 +48,7 @@ struct TypedPointerData {
 #define GET_LIB_GLOBAL_END() \
 	lua_pop(L, 1);
 
-void jslua_push_jsvar(lua_State *L, void *varptr, int type) {
+void jslua_push_jsvar(lua_State *L, int varptr, int type) {
 	struct TypedPointerData *data = (struct TypedPointerData*)lua_newuserdata(L, sizeof(struct TypedPointerData));
 	data->ptr = varptr;
 	data->type = type;
@@ -215,9 +215,16 @@ lua_State* jslua_new_state() {
 	lua_rawset(L, -3);
 	//END: Create metatables
 	
-	
 	lua_setglobal(L, "js");
 	//END: Load myself
+	
+	lua_getglobal(L, "js");
+	
+	lua_pushstring(L, "window");
+	jslua_push_jsvar(L, -1, TYPE_JSOBJECT);
+	lua_rawset(L, -3);
+	
+	lua_pop(L, 1);
 	
 	return L;
 }
