@@ -27,21 +27,19 @@ void jslua_pop_top(lua_State *L) {
 	lua_pop(L, 1);
 }
 
-enum DataType {
-	TYPE_JSFUNCTION,
-	TYPE_JSARRAY,
-	TYPE_JSOBJECT
-};
+#define	TYPE_JSFUNCTION	1
+#define TYPE_JSARRAY	2
+#define TYPE_JSOBJECT	3
 
 struct TypedPointerData {
 	int type;
 	void *ptr;
 };
 
-void jslua_push_function(lua_State *L, void *funcpointer) {
+void jslua_push_jsvar(lua_State *L, void *varptr, int type) {
 	struct TypedPointerData *data = (struct TypedPointerData*)lua_newuserdata(L, sizeof(struct TypedPointerData));
-	data->ptr = funcpointer;
-	data->type = TYPE_JSFUNCTION;
+	data->ptr = varptr;
+	data->type = type;
 }
 
 const char* jslua_pop_string(lua_State *L) {
@@ -138,12 +136,7 @@ static int luajs_call(lua_State *L) {
 		return 1;
 	}
 	
-	char* jsonRes = luaCallFunctionPointer(data->ptr, L, lua_gettop(L));
-	
-	GET_LIB_GLOBAL("json", "decode");
-	lua_pushstring(L, jsonRes);
-	lua_call(L, 1, 1);
-	lua_remove(L, 1);
+	luaCallFunctionPointer(data->ptr, L, lua_gettop(L));
 	return 1;
 }
 
