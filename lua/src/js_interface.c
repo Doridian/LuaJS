@@ -155,13 +155,13 @@ static int luajs_jsobject__gc(lua_State *L) {
 }
 
 static int luajs_jsobject__index(lua_State *L) {
-	GET_TypedPointerData();
 	const char *str = lua_tostring(L, -1);
 	lua_pop(L, 1);
+	GET_TypedPointerData();
 	return EM_ASM_INT({
-		__luajs_push_var_ref($0, Pointer_stringify($1));
+		__luajs_push_var_ref($0, $1, Pointer_stringify($2));
 		return 1;
-	}, data->ptr, str);
+	}, L, data->ptr, str);
 }
 
 lua_State* jslua_new_state() {

@@ -194,8 +194,8 @@ exports = (function() {
 	
 	__luajs_push_var = push_var;
 	
-	function __luajs_push_var_ref(index, key) {
-		push_var(luaPassedVars[index][key]);
+	function __luajs_push_var_ref(state, index, key) {
+		push_var(state, luaPassedVars[index][key]);
 	}
 	
 	function luaCallFunction(func, state, stack_size) {
