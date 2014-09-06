@@ -1,4 +1,10 @@
-var __luajs_push_var;
+var __luajs_push_var, __luajs_push_var_ref;
+
+var _GLOBAL;
+if(window)
+	_GLOBAL = window;
+else if(global)
+	_GLOBAL = global;
 
 exports = (function() {
 	function inherit(childClass, parentClass) {
@@ -148,7 +154,7 @@ exports = (function() {
 	
 	var luaLastRefIdx = -1;
 	var luaPassedVars = {};
-	luaPassedVars[-1] = window;
+	luaPassedVars[-1] = _GLOBAL;
 	
 	function luaGetVarPtr(varObj) {
 		luaPassedVars[++luaLastRefIdx] = varObj;
@@ -454,6 +460,6 @@ exports = (function() {
 
 for(var idx in exports) {
 	if(exports.hasOwnProperty(idx))
-		window[idx] = exports[idx];
+		_GLOBAL[idx] = exports[idx];
 }
 

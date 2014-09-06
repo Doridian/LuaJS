@@ -220,7 +220,7 @@ lua_State* jslua_new_state() {
 	
 	lua_getglobal(L, "js");
 	
-	lua_pushstring(L, "window");
+	lua_pushstring(L, "global");
 	jslua_push_jsvar(L, -1, TYPE_JSOBJECT);
 	lua_rawset(L, -3);
 	
