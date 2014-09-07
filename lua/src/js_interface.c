@@ -246,28 +246,6 @@ static int luajs_jsarray__len(lua_State *L) {
 	return 1;
 }
 
-static int luajs_jsarray_toTable(lua_State *L) {
-	GET_TypedPointerData();
-	
-	lua_newtable(L);
-	
-	EM_ASM_INT({
-		var array = __luajs_get_var_by_ref($1);
-		
-		for(var idx in array) {
-			if(!array.hasOwnProperty(idx))
-				continue;
-			__luajs_push_var($0, idx);
-			__luajs_push_var($0, array[idx]);
-			__luajs_luaNative.rawseti($0, -3);
-		}
-		
-		return 0;
-	}, L, data->ptr);
-	
-	return 1;
-}
-
 static int luajs_jsobject_toTable(lua_State *L) {
 	GET_TypedPointerData();
 	
@@ -279,9 +257,14 @@ static int luajs_jsobject_toTable(lua_State *L) {
 		for(var idx in obj) {
 			if(!obj.hasOwnProperty(idx))
 				continue;
-			__luajs_push_var($0, idx);
-			__luajs_push_var($0, obj[idx]);
-			__luajs_luaNative.rawset($0, -3);
+			if(typeof idx == "number") {
+				__luajs_push_var($0, array[idx]);
+				__luajs_luaNative.rawseti($0, -2, idx);
+			} else {
+				__luajs_push_var($0, idx);
+				__luajs_push_var($0, obj[idx]);
+				__luajs_luaNative.rawset($0, -3);
+			}
 		}
 		
 		return 0;
@@ -333,7 +316,7 @@ lua_State* jslua_new_state() {
 	lua_rawset(L, -3);
 	
 	lua_pushstring(L, "toTable");
-	lua_pushcfunction(L, luajs_jsarray_toTable);
+	lua_pushcfunction(L, luajs_jsobject_toTable);
 	lua_rawset(L, -3);
 	
 	lua_rawset(L, -3);
