@@ -101,6 +101,7 @@ exports = (function() {
 	};
 	
 	var luaJSDataTypes = {
+		unknown: -1,
 		function: 1,
 		array: 2,
 		object: 3
