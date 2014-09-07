@@ -161,18 +161,31 @@ exports = (function() {
 	
 	var luaLastRefIdx = -1;
 	var luaPassedVars = {};
-	luaPassedVars[-1] = [_GLOBAL, null];
+	luaPassedVars[-1] = [_GLOBAL, null, -1];
 	
 	function luaGetVarPtr(varObj, varRef) {
 		if(varRef === undefined)
 			varRef = null;
+			
+		for(var idx in luaPassedVars) {
+			var ptr = luaPassedVars[idx];
+			if(ptr[0] == varObj && ptr[1] == varRef) {
+				ptr[2]++;
+				return idx;
+			}
+		}
 		
-		luaPassedVars[++luaLastRefIdx] = [varObj, varRef];
+		luaPassedVars[++luaLastRefIdx] = [varObj, varRef, 1];
 		return luaLastRefIdx;
 	}
 	
 	function luaRemoveVarPtr(varPtr) {
-		delete luaPassedVars[varPtr];
+		var refCounter = luaPassedVars[varPtr][2];
+		
+		if(refCounter > 1)
+			luaPassedVars[varPtr][2]--;
+		else if(refCounter >= 0)
+			delete luaPassedVars[varPtr];
 	}
 	
 	function push_var(state, arg, ref) {
