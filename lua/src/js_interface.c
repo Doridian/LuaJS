@@ -158,29 +158,43 @@ static int luajs_jsobject__gc(lua_State *L) {
 	return 0;
 }
 
-static int luajs_jsobject__index(lua_State *L) {
-	const char *str = lua_tostring(L, -1);
+#define POP_NUMBER_OR_STR_TO_VAL() \
+	int val; boolean isString = FALSE; \
+	if(lua_isnumber(L, -1)) { \
+		val = lua_tonumber(L, -1); \
+	} else { \
+		val = (int)lua_tostring(L, -1); \
+		isString = TRUE; \
+	} \
 	lua_pop(L, 1);
+
+static int luajs_jsobject__index(lua_State *L) {
+	POP_NUMBER_OR_STR_TO_VAL();
+	
 	GET_TypedPointerData();
 	return EM_ASM_INT({
+		if($3)
+			$2 = Pointer_stringify($2);
 		var val = __luajs_get_var_by_ref($1);
-		__luajs_push_var($0, val[Pointer_stringify($2)], val);
+		__luajs_push_var($0, val[$2], val);
 		return 1;
-	}, L, data->ptr, str);
+	}, L, data->ptr, val, isString);
 }
 
 static int luajs_jsobject__newindex(lua_State *L) {
 	int refIdx = luaL_ref(L, LUA_REGISTRYINDEX);
 	
-	const char *str = lua_tostring(L, -1);
-	lua_pop(L, 1);
+	POP_NUMBER_OR_STR_TO_VAL();
+	
 	GET_TypedPointerData();
 	
 	lua_rawgeti(L, LUA_REGISTRYINDEX, refIdx);
 	int ret = EM_ASM_INT({
-		__luajs_get_var_by_ref($1)[Pointer_stringify($2)] = __luajs_decode_single($0, -1, true);
+		if($3)
+			$2 = Pointer_stringify($2);
+		__luajs_get_var_by_ref($1)[$2] = __luajs_decode_single($0, -1, true);
 		return 0;
-	}, L, data->ptr, str);
+	}, L, data->ptr, val, isString);
 	lua_pop(L, 1);
 	luaL_unref(L, LUA_REGISTRYINDEX, refIdx);
 	
