@@ -53,11 +53,7 @@ typedef struct TypedPointerData {
 #define GET_LIB_GLOBAL_END() \
 	lua_pop(L, 1);
 
-void jslua_push_jsvar(lua_State *L, int varptr, int type) {
-	TypedPointerData *data = (TypedPointerData*)lua_newuserdata(L, sizeof(TypedPointerData));
-	data->ptr = varptr;
-	data->type = type;
-	
+static void jslua_get_metatable(lua_State *L, int type) {
 	switch(type) {
 		case TYPE_JSFUNCTION:
 			GET_LIB_GLOBAL("js", "__mt_js_function")
@@ -71,7 +67,15 @@ void jslua_push_jsvar(lua_State *L, int varptr, int type) {
 		default:
 			GET_LIB_GLOBAL("js", "__mt_js_unknown")
 			break;
-	}
+	}	
+}
+
+void jslua_push_jsvar(lua_State *L, int varptr, int type) {
+	TypedPointerData *data = (TypedPointerData*)lua_newuserdata(L, sizeof(TypedPointerData));
+	data->ptr = varptr;
+	data->type = type;
+	
+	jslua_get_metatable(L, type);
 	
 	lua_setmetatable(L, -3);
 	GET_LIB_GLOBAL_END();
@@ -147,6 +151,10 @@ static int luajs_eval(lua_State *L) {
 }
 
 #define GET_TypedPointerData() \
+	if(!lua_isuserdata(L, 1)) { \
+		lua_pushstring(L, "Invalid self"); \
+		lua_error(L); \
+	} \
 	TypedPointerData *data = (TypedPointerData*)lua_touserdata(L, 1); \
 	lua_remove(L, 1);
 
@@ -183,6 +191,21 @@ static int luajs_jsobject__index(lua_State *L) {
 	POP_NUMBER_OR_STR_TO_VAL();
 	
 	GET_TypedPointerData();
+	
+	if(isString) {
+		jslua_get_metatable(L, data->type);
+		lua_pushstring(L, (char*)val);
+		
+		lua_rawget(L, -2);
+		lua_remove(L, 1);
+		lua_remove(L, 1);
+		
+		if(lua_isnil(L, -1))
+			lua_pop(L, 1);
+		else
+			return 1;
+	}
+	
 	return EM_ASM_INT({
 		if($3)
 			$2 = Pointer_stringify($2);
@@ -222,6 +245,51 @@ static int luajs_jsarray__len(lua_State *L) {
 	lua_pushnumber(L, len);
 	return 1;
 }
+
+static int luajs_jsarray_toTable(lua_State *L) {
+	GET_TypedPointerData();
+	
+	lua_newtable(L);
+	
+	EM_ASM_INT({
+		var array = __luajs_get_var_by_ref($1);
+		
+		for(var idx in array) {
+			if(!array.hasOwnProperty(idx))
+				continue;
+			__luajs_push_var($0, idx);
+			__luajs_push_var($0, array[idx]);
+			__luajs_luaNative.rawseti($0, -3);
+		}
+		
+		return 0;
+	}, L, data->ptr);
+	
+	return 1;
+}
+
+static int luajs_jsobject_toTable(lua_State *L) {
+	GET_TypedPointerData();
+	
+	lua_newtable(L);
+	
+	EM_ASM_INT({
+		var obj = __luajs_get_var_by_ref($1);
+		
+		for(var idx in obj) {
+			if(!obj.hasOwnProperty(idx))
+				continue;
+			__luajs_push_var($0, idx);
+			__luajs_push_var($0, obj[idx]);
+			__luajs_luaNative.rawset($0, -3);
+		}
+		
+		return 0;
+	}, L, data->ptr);
+	
+	return 1;
+}
+
 
 lua_State* jslua_new_state() {
 	lua_State* L = luaL_newstate();  /* create state */
@@ -264,6 +332,10 @@ lua_State* jslua_new_state() {
 	lua_pushcfunction(L, luajs_jsarray__len);
 	lua_rawset(L, -3);
 	
+	lua_pushstring(L, "toTable");
+	lua_pushcfunction(L, luajs_jsarray_toTable);
+	lua_rawset(L, -3);
+	
 	lua_rawset(L, -3);
 	//END: Create metatables
 	
@@ -281,6 +353,10 @@ lua_State* jslua_new_state() {
 	
 	lua_pushstring(L, "__newindex");
 	lua_pushcfunction(L, luajs_jsobject__newindex);
+	lua_rawset(L, -3);
+	
+	lua_pushstring(L, "toTable");
+	lua_pushcfunction(L, luajs_jsobject_toTable);
 	lua_rawset(L, -3);
 	
 	lua_rawset(L, -3);
@@ -301,7 +377,7 @@ lua_State* jslua_new_state() {
 	lua_rawset(L, -3);
 	//END: Create metatables
 	
-	//Create metatables (function)
+	//Create metatables (unknown)
 	lua_pushstring(L, "__mt_js_unknown");
 	lua_newtable(L);
 	

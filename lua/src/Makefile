@@ -76,7 +76,9 @@ BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_lua_settop',\
 '_lua_gettop',\
 '_lua_tonumberx',\
-]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=128
+'_lua_rawset',\
+'_lua_rawseti',\
+]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16
 
 ALL_O= $(BASE_O) $(LUA_O) $(LUAC_O) $(BINARY_O)
 ALL_T= $(LUA_A) $(LUA_T) $(LUAC_T) $(BINARY_T)

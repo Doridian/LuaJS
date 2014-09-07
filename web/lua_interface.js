@@ -62,7 +62,9 @@ exports = (function() {
 		["lua_tolstring", "string", ["number", "number", "number"]],
 		["lua_tonumberx", "number", ["number", "number", "number"]],
 		["lua_getmetatable", "number", ["number", "number"]],
-		["lua_setmetatable", "number", ["number", "number"]]
+		["lua_setmetatable", "number", ["number", "number"]],
+		["lua_rawseti", "", ["number", "number"]],
+		["lua_rawset", "", ["number", "number"]],
 	]);
 	
 	
@@ -481,6 +483,8 @@ exports = (function() {
 		LuaFunction: LuaFunction,
 		LuaTable: LuaTable,
 		LuaReference: LuaReference,
+		
+		__luajs_luaNative: luaNative,
 		__luajs_push_var: push_var,
 		__luajs_get_var_by_ref: __luajs_get_var_by_ref,
 		__luajs_decode_single: decode_single
