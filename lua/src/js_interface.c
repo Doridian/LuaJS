@@ -315,6 +315,10 @@ lua_State* jslua_new_state() {
 	lua_pushcfunction(L, luajs_jsarray__len);
 	lua_rawset(L, -3);
 	
+	lua_pushstring(L, "__isJavascript");
+	lua_pushboolean(L, TRUE);
+	lua_rawset(L, -3);
+	
 	lua_pushstring(L, "toTable");
 	lua_pushcfunction(L, luajs_jsobject_toTable);
 	lua_rawset(L, -3);
@@ -342,6 +346,10 @@ lua_State* jslua_new_state() {
 	lua_pushcfunction(L, luajs_jsobject_toTable);
 	lua_rawset(L, -3);
 	
+	lua_pushstring(L, "__isJavascript");
+	lua_pushboolean(L, TRUE);
+	lua_rawset(L, -3);
+	
 	lua_rawset(L, -3);
 	//END: Create metatables
 	
@@ -357,6 +365,10 @@ lua_State* jslua_new_state() {
 	lua_pushcfunction(L, luajs_call);
 	lua_rawset(L, -3);
 	
+	lua_pushstring(L, "__isJavascript");
+	lua_pushboolean(L, TRUE);
+	lua_rawset(L, -3);
+	
 	lua_rawset(L, -3);
 	//END: Create metatables
 	
@@ -368,12 +380,17 @@ lua_State* jslua_new_state() {
 	lua_pushcfunction(L, luajs_jsvar__gc);
 	lua_rawset(L, -3);
 	
+	lua_pushstring(L, "__isJavascript");
+	lua_pushboolean(L, TRUE);
+	lua_rawset(L, -3);
+	
 	lua_rawset(L, -3);
 	//END: Create metatables
 	
 	lua_setglobal(L, "js");
 	//END: Load myself
 	
+	//Load js.global
 	lua_getglobal(L, "js");
 	
 	lua_pushstring(L, "global");
@@ -381,6 +398,28 @@ lua_State* jslua_new_state() {
 	lua_rawset(L, -3);
 	
 	lua_pop(L, 1);
+	//END: Load js.global
+	
+	jslua_execute(L, " \
+		local function __jsmt_addrecurse(tbl)												\
+			local tbl_toTable = tbl.toTable													\
+			 function tbl:toTable(recursive, maxDepth)										\
+				local ret = tbl_toTable(self)												\
+				if not recursive then return ret end										\
+				maxDepth = (maxDepth or 10) - 1												\
+				if maxDepth <= 0 then return nil end										\
+				local k,v																	\
+				for k,v in next, ret do														\
+					if v and type(v) == 'userdata' and v.__isJavascript and v.toTable then	\
+						ret[k] = v:toTable(true, maxDepth)									\
+					end																		\
+				end																			\
+				return ret																	\
+			 end																			\
+		end																					\
+		__jsmt_addrecurse(js.__mt_js_object)												\
+		__jsmt_addrecurse(js.__mt_js_array)													\
+	");
 	
 	return L;
 }
