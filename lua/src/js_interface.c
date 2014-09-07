@@ -15,7 +15,11 @@ int json_decode(lua_State *l);
 int json_encode(lua_State *l);
 int luaopen_cjson(lua_State *l);
 
-typedef char* (*LUA_CFP)(int funcPtr, lua_State *L, int stack_size);
+typedef int boolean;
+#define TRUE 1
+#define FALSE 0
+
+typedef char* (*LUA_CFP)(int funcPtr, lua_State *L, int stack_size, boolean convertArgs);
 typedef char* (*LUA_RVP)(int varPtr);
 
 LUA_CFP luaCallFunctionPointer;
@@ -144,7 +148,7 @@ static int luajs_call(lua_State *L) {
 		return 1;
 	}
 	
-	luaCallFunctionPointer(data->ptr, L, lua_gettop(L));
+	luaCallFunctionPointer(data->ptr, L, lua_gettop(L), TRUE);
 	return 1;
 }
 
@@ -159,9 +163,28 @@ static int luajs_jsobject__index(lua_State *L) {
 	lua_pop(L, 1);
 	GET_TypedPointerData();
 	return EM_ASM_INT({
-		__luajs_push_var_ref($0, $1, Pointer_stringify($2));
+		var val = __luajs_get_var_by_ref($1);
+		__luajs_push_var($0, val[Pointer_stringify($2)], val);
 		return 1;
 	}, L, data->ptr, str);
+}
+
+static int luajs_jsobject__newindex(lua_State *L) {
+	int refIdx = luaL_ref(L, LUA_REGISTRYINDEX);
+	
+	const char *str = lua_tostring(L, -1);
+	lua_pop(L, 1);
+	GET_TypedPointerData();
+	
+	lua_rawgeti(L, LUA_REGISTRYINDEX, refIdx);
+	int ret = EM_ASM_INT({
+		__luajs_get_var_by_ref($1)[Pointer_stringify($2)] = __luajs_decode_single($0, -1, true);
+		return 0;
+	}, L, data->ptr, str);
+	lua_pop(L, 1);
+	luaL_unref(L, LUA_REGISTRYINDEX, refIdx);
+	
+	return ret;
 }
 
 lua_State* jslua_new_state() {
@@ -195,6 +218,10 @@ lua_State* jslua_new_state() {
 	
 	lua_pushstring(L, "__index");
 	lua_pushcfunction(L, luajs_jsobject__index);
+	lua_rawset(L, -3);
+	
+	lua_pushstring(L, "__newindex");
+	lua_pushcfunction(L, luajs_jsobject__newindex);
 	lua_rawset(L, -3);
 	
 	lua_rawset(L, -3);

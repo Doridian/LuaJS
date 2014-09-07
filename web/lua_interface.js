@@ -125,7 +125,7 @@ exports = (function() {
 	for(var idx in MOD_PATH)
 		FS.createPath("/", MOD_PATH[idx].substr(1), true, true);
 	
-	function decode_single(state, pos) {
+	function decode_single(state, pos, convertArgs) {
 		switch(lua_type(state, pos)) {
 			case luaTypes.nil:
 				return null;
@@ -134,19 +134,29 @@ exports = (function() {
 			case luaTypes.string:
 				return lua_tostring(state, pos);
 			case luaTypes.table:
-				return new LuaTable(state, lua_toref(state, pos));
+				var tbl = new LuaTable(state, lua_toref(state, pos));
+				if(convertArgs) {
+					var ret = tbl.toObject(true, 10, true);
+					tbl.unref();
+					return ret;
+				}
+				return tbl;
 			case luaTypes.function:
+				if(convertArgs)
+					return null;
 				return new LuaFunction(state, lua_toref(state, pos));
 			default:
+				if(convertArgs)
+					return null;
 				return new LuaReference(state, lua_toref(state, pos));
 		}
 	}
 	
 
-	function decode_stack(state, stack_size) {
+	function decode_stack(state, stack_size, convertArgs) {
 		var ret = [];
 		for(var i = 0; i < stack_size; i++) {
-			ret.unshift(decode_single(state, -1));
+			ret.unshift(decode_single(state, -1, convertArgs));
 			lua_pop_top(state);
 		}
 		return ret;
@@ -154,10 +164,13 @@ exports = (function() {
 	
 	var luaLastRefIdx = -1;
 	var luaPassedVars = {};
-	luaPassedVars[-1] = _GLOBAL;
+	luaPassedVars[-1] = [_GLOBAL, null];
 	
-	function luaGetVarPtr(varObj) {
-		luaPassedVars[++luaLastRefIdx] = varObj;
+	function luaGetVarPtr(varObj, varRef) {
+		if(varRef === undefined)
+			varRef = null;
+		
+		luaPassedVars[++luaLastRefIdx] = [varObj, varRef];
 		return luaLastRefIdx;
 	}
 	
@@ -165,7 +178,7 @@ exports = (function() {
 		delete luaPassedVars[varPtr];
 	}
 	
-	function push_var(state, arg) {
+	function push_var(state, arg, ref) {
 		if(arg === null) {
 			lua_pushnil(state);
 			return;
@@ -184,45 +197,41 @@ exports = (function() {
 				lua_push_string(state, arg);
 				break;
 			case "function":
-				lua_push_jsvar(state, luaGetVarPtr(arg), luaJSDataTypes.function);
+				lua_push_jsvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.function);
 				break;
 			case "object":
 				if(arg instanceof LuaReference)
 					arg.push(state);
 				else if(arg instanceof Array)
-					lua_push_jsvar(state, luaGetVarPtr(arg), luaJSDataTypes.array);
+					lua_push_jsvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.array);
 				else
-					lua_push_jsvar(state, luaGetVarPtr(arg), luaJSDataTypes.object);
+					lua_push_jsvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.object);
 				break;
 			default:
 				throw new LuaError("Unhandled value push: " + arg);
 		}
 	}
 	
-	__luajs_push_var = push_var;
-	
-	function __luajs_push_var_ref(state, index, key) {
-		if(key)
-			push_var(state, luaPassedVars[index][key]);
-		else
-			push_var(state, luaPassedVars[index]);
+	function __luajs_get_var_by_ref(index) {
+		return luaPassedVars[index][0];
 	}
 	
-	function luaCallFunction(func, state, stack_size) {
-		var variables = decode_stack(state, stack_size);
-		push_var(state, func.apply(null, variables));
+	function luaCallFunction(func, funcThis, state, stack_size, convertArgs) {
+		var variables = decode_stack(state, stack_size, convertArgs);
+		push_var(state, func.apply(funcThis, variables));
 	}
 	
-	function luaEval(str, state, stack_size) {
-		return luaCallFunction(function() { eval(str); }, state, stack_size);
+	function luaEval(str, state, stack_size, convertArgs) {
+		return luaCallFunction(function() { eval(str); }, null, state, stack_size, convertArgs);
 	}
 	
-	function luaCallFunctionString(funcDef, state, stack_size) {
-		return luaCallFunction(eval(funcDef), state, stack_size);
+	function luaCallFunctionString(funcDef, state, stack_size, convertArgs) {
+		return luaCallFunction(eval(funcDef), null, state, stack_size, convertArgs);
 	}
 	
-	function luaCallFunctionPointer(funcPtr, state, stack_size) {
-		return luaCallFunction(luaPassedVars[funcPtr], state, stack_size);
+	function luaCallFunctionPointer(funcPtr, state, stack_size, convertArgs) {
+		var varPtr = luaPassedVars[funcPtr];
+		return luaCallFunction(varPtr[0], varPtr[1], state, stack_size, convertArgs);
 	}
 	
 	Module.ccall("__jslua_set_fp", "", ["number", "number"], [Runtime.addFunction(luaCallFunctionPointer), Runtime.addFunction(luaRemoveVarPtr)]);
@@ -326,7 +335,7 @@ exports = (function() {
 		return ret;
 	}
 	
-	LuaTable.prototype.toObject = function(recurse, maxDepth) {
+	LuaTable.prototype.toObject = function(recurse, maxDepth, unrefAll) {
 		this.push();
 		lua_pushnil(this.state);
 		var ret = {}
@@ -342,13 +351,19 @@ exports = (function() {
 		if(!maxDepth)
 			maxDepth = 10;
 		
-		if(recurse && maxDepth > 0) {
+		if(recurse) {
 			maxDepth--;
 			
-			for(var idx in ret) {
+			var ret_iter = ret.slice(0);
+			for(var idx in ret_iter) {
 				var val = ret[idx];
-				if(val instanceof LuaTable)
+				if(val instanceof LuaTable && maxDepth > 0) {
 					ret[idx] = val.toObject(true, maxDepth);
+					val.unref();
+				} else if(unrefAll && value instanceof LuaReference) {
+					val.unref();
+					delete ret[idx];
+				}
 			}
 		}
 		
@@ -453,8 +468,9 @@ exports = (function() {
 		LuaState: LuaState,
 		LuaFunction: LuaFunction,
 		LuaReference: LuaReference,
-		__luajs_push_var: __luajs_push_var,
-		__luajs_push_var_ref: __luajs_push_var_ref,
+		__luajs_push_var: push_var,
+		__luajs_get_var_by_ref: __luajs_get_var_by_ref,
+		__luajs_decode_single: decode_single
 	};  
 })();
 
