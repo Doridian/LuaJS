@@ -34,15 +34,15 @@ void jslua_pop_top(lua_State *L) {
 	lua_pop(L, 1);
 }
 
-#define TYPE_JSUNKNOWN		-1
-#define	TYPE_JSFUNCTION		 1
-#define TYPE_JSARRAY		 2
-#define TYPE_JSOBJECT		 3
+#define TYPE_JSUNKNOWN		0
+#define	TYPE_JSFUNCTION		1
+#define TYPE_JSARRAY		2
+#define TYPE_JSOBJECT		3
 
-struct TypedPointerData {
+typedef struct TypedPointerData {
 	int type;
 	int ptr;
-};
+} TypedPointerData;
 
 #define GET_LIB_GLOBAL(LIB, NAME) {\
 	lua_getglobal(L, LIB); \
@@ -54,7 +54,7 @@ struct TypedPointerData {
 	lua_pop(L, 1);
 
 void jslua_push_jsvar(lua_State *L, int varptr, int type) {
-	struct TypedPointerData *data = (struct TypedPointerData*)lua_newuserdata(L, sizeof(struct TypedPointerData));
+	TypedPointerData *data = (TypedPointerData*)lua_newuserdata(L, sizeof(TypedPointerData));
 	data->ptr = varptr;
 	data->type = type;
 	
@@ -147,7 +147,7 @@ static int luajs_eval(lua_State *L) {
 }
 
 #define GET_TypedPointerData() \
-	struct TypedPointerData *data = (struct TypedPointerData*)lua_touserdata(L, 1); \
+	TypedPointerData *data = (TypedPointerData*)lua_touserdata(L, 1); \
 	lua_remove(L, 1);
 
 static int luajs_call(lua_State *L) {

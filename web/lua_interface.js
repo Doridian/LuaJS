@@ -87,31 +87,31 @@ exports = (function() {
 	}
 	
 	var luaTypes = {
-		nil: 0,
-		bool: 1,
-		boolean: 1,
-		lightuserdata: 2,
-		number: 3,
-		string: 4,
-		table: 5,
-		function: 6,
-		userdata: 7,
-		thread: 8,
-		coroutine: 8
+		nil:			0,
+		bool:			1,
+		boolean:		1,
+		lightuserdata:	2,
+		number:			3,
+		string:			4,
+		table:			5,
+		function:		6,
+		userdata:		7,
+		thread:			8,
+		coroutine:		8
 	};
 	
 	var luaJSDataTypes = {
-		unknown: -1,
-		function: 1,
-		array: 2,
-		object: 3
+		unknown:		0,
+		function: 		1,
+		array:			2,
+		object:			3
 	};
 	
 	var luaConstants = {
-		LUA_REGISTRYINDEX: -10000,
-		LUA_ENVIRONINDEX: -10001,
-		LUA_GLOBALSINDEX: -10002,
-		LUA_RIDX_GLOBALS: 2
+		LUA_REGISTRYINDEX:	-10000,
+		LUA_ENVIRONINDEX: 	-10001,
+		LUA_GLOBALSINDEX:	-10002,
+		LUA_RIDX_GLOBALS:	2
 	};
 
 	var MOD_PATH = {
