@@ -142,9 +142,10 @@ exports = (function() {
 				}
 				return tbl;
 			case luaTypes.function:
+				var ret = new LuaFunction(state, lua_toref(state, pos));
 				if(convertArgs)
-					return null;
-				return new LuaFunction(state, lua_toref(state, pos));
+					return ret.getClosure();
+				return ret;
 			default:
 				if(convertArgs)
 					return null;
@@ -288,6 +289,13 @@ exports = (function() {
 	}
 
 	inherit(LuaFunction, LuaReference);
+
+	LuaFunction.prototype.getClosure = function() {
+		var func = this;
+		return function() {
+			LuaFunction.prototype.call.apply(func, arguments);
+		};
+	}
 
 	LuaFunction.prototype.call = function() {
 		this.push(this.state);
