@@ -135,7 +135,7 @@ exports = (function() {
 			case luaTypes.table:
 				var tbl = new LuaTable(state, luaNative.toref(state, pos));
 				if(convertArgs) {
-					var ret = tbl.toObject(true, 10, true);
+					var ret = tbl.toObject(true, true);
 					tbl.unref();
 					return ret;
 				}
@@ -349,7 +349,7 @@ exports = (function() {
 		return ret;
 	}
 	
-	LuaTable.prototype.toObject = function(recurse, maxDepth, unrefAll) {
+	LuaTable.prototype.toObject = function(recurse, unrefAll, maxDepth) {
 		this.push();
 		luaNative.pushnil(this.state);
 		var ret = {}
@@ -372,7 +372,7 @@ exports = (function() {
 			for(var idx in ret_iter) {
 				var val = ret[idx];
 				if(val instanceof LuaTable && maxDepth > 0) {
-					ret[idx] = val.toObject(true, maxDepth);
+					ret[idx] = val.toObject(true, unrefAll, maxDepth);
 					val.unref();
 				} else if(unrefAll && value instanceof LuaReference) {
 					val.unref();
