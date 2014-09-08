@@ -11,10 +11,6 @@
 
 #include <emscripten.h> 
 
-int json_decode(lua_State *l);
-int json_encode(lua_State *l);
-int luaopen_cjson(lua_State *l);
-
 typedef int boolean;
 #define TRUE 1
 #define FALSE 0
@@ -279,10 +275,6 @@ lua_State* jslua_new_state() {
 	lua_gc(L, LUA_GCSTOP, 0);  /* stop collector during initialization */
 	luaL_openlibs(L);  /* open libraries */
 	lua_gc(L, LUA_GCRESTART, 0);
-	
-	//Load CJSON
-	luaopen_cjson(L);
-	lua_setglobal(L, "json");
 	
 	//Load myself
 	lua_newtable(L);

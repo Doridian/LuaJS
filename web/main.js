@@ -1,1 +1,1 @@
-../lua/src/js_interface.js
+../src/js_interface.js
