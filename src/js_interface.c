@@ -228,7 +228,7 @@ static int luajs_jsobject__newindex(lua_State *L) {
 }
 
 static int luajs_jsarray__index(lua_State *L) {
-	if(lua_isstring(L, -1))
+	if(!lua_isnumber(L, -1))
 		return luajs_jsobject__index(L);
 	
 	int num = lua_tonumber(L, -1);
@@ -244,7 +244,7 @@ static int luajs_jsarray__index(lua_State *L) {
 }
 
 static int luajs_jsarray__newindex(lua_State *L) {
-	if(lua_isstring(L, -2))
+	if(!lua_isnumber(L, -2))
 		return luajs_jsobject__newindex(L);
 	
 	int refIdx = luaL_ref(L, LUA_REGISTRYINDEX);
