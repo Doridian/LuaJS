@@ -4,14 +4,17 @@ PATCH_FILE=lua/src/Makefile
 PATCH_FILE_BACKUP=$PATCH_FILE~
 
 if [ -e "$PATCH_FILE_BACKUP" ]; then
+	set -x
         rm -f "$PATCH_FILE"
         mv "$PATCH_FILE_BACKUP" "$PATCH_FILE"
+	set +x
 fi
 
 if [ "x$1" = "xclean" ]; then
 	exit 0
 fi
 
+set -x
 sed -ri~ '
 # Replace AR with ARR
 s/\$\(AR\)/$(ARR)/g; t
