@@ -39,5 +39,3 @@ You can convert JS objects/arrays to native Lua tables by using jsObject:toTable
 Todo
 ----
 Try to find a clever way to do finalizers/garbage collector hooks in JS.
-
-`__pairs / __ipairs` for jsObject/jsArray metatable in Lua to make them iterable
