@@ -3,10 +3,10 @@
 
 #include "jsvar.h"
 
-#define GET_LIB_GLOBAL(LIB, NAME) {\
-	lua_getglobal(L, LIB); \
-	lua_pushstring(L, NAME); \
-	lua_rawget(L, -2); \
+#define GET_LIB_GLOBAL(LIB, NAME) {		\
+	lua_getglobal(L, LIB);				\
+	lua_pushstring(L, NAME);			\
+	lua_rawget(L, -2);					\
 }
 
 void luajs_jsvar_init(lua_State *L) {

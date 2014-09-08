@@ -54,7 +54,7 @@ lua_State* jslua_new_state() {
 	lua_pop(L, 1);
 	//END: Load js.global
 	
-	jslua_execute(L, " \
+	jslua_execute(L, "																								\
 		local function __jsmt_addrecurse(tbl)																		\
 			local tbl_toTable = tbl.toTable																			\
 			 function tbl:toTable(recursive, maxDepth)																\
@@ -71,9 +71,10 @@ lua_State* jslua_new_state() {
 				return ret																							\
 			 end																									\
 		end																											\
+		local __jsObject_keys = js.global.Object.keys																\
 		function js.__mt_js_object:__pairs()																		\
 			local _tbl = self																						\
-			local _arr = js.global.Object:keys(_tbl)																\
+			local _arr = __jsObject_keys(nil, _tbl)																	\
 			local _arrInv = {}																						\
 			for k, v in ipairs(_arr) do																				\
 				_arrInv[v] = k																						\

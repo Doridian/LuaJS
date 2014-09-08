@@ -15,7 +15,7 @@ typedef int boolean;
 #define FALSE 0
 
 #define TYPE_JSUNKNOWN		0
-#define	TYPE_JSFUNCTION		1
+#define TYPE_JSFUNCTION		1
 #define TYPE_JSARRAY		2
 #define TYPE_JSOBJECT		3
 
