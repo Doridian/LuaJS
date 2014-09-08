@@ -1,6 +1,3 @@
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #define lua_c
@@ -162,7 +159,7 @@ int jslua_pop_jsvar(lua_State *L, int pos) {
 	return data->ptr;
 }
 
-static int luajs_call(lua_State *L) {
+static int luajs_jsfunction__call(lua_State *L) {
 	GET_TypedPointerData();
 	
 	if(data->type != TYPE_JSFUNCTION) {
@@ -331,6 +328,13 @@ static int luajs_jsarray__ipairs(lua_State *L) {
 	return 1;
 }
 
+static int luajs_jsvar__isJavascript(lua_State *L) {
+	boolean isJS = lua_isuserdata(L, -1);
+	lua_pop(L, 1);
+	lua_pushboolean(L, isJS);
+	return 1;
+}
+
 lua_State* jslua_new_state() {
 	lua_State* L = luaL_newstate();  /* create state */
 	lua_gc(L, LUA_GCSTOP, 0);  /* stop collector during initialization */
@@ -340,49 +344,28 @@ lua_State* jslua_new_state() {
 	//Load myself
 	lua_newtable(L);
 	
-	lua_pushstring(L, "eval");
-	lua_pushcfunction(L, luajs_eval);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "call");
-	lua_pushcfunction(L, luajs_call);
-	lua_rawset(L, -3);
+	luaL_Reg reg_jsmain[] = {
+		{"eval", luajs_eval},
+		{NULL, NULL}
+	};
+	luaL_setfuncs(L, reg_jsmain, 0);
 	
 	//Create metatables (array)
 	lua_pushstring(L, "__mt_js_array");
 	lua_newtable(L);
-	
-	lua_pushstring(L, "__gc");
-	lua_pushcfunction(L, luajs_jsvar__gc);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "__index");
-	lua_pushcfunction(L, luajs_jsarray__index);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "__newindex");
-	lua_pushcfunction(L, luajs_jsarray__newindex);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "__len");
-	lua_pushcfunction(L, luajs_jsarray__len);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "__pairs");
-	lua_pushcfunction(L, luajs_jsarray__ipairs);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "__ipairs");
-	lua_pushcfunction(L, luajs_jsarray__ipairs);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "__isJavascript");
-	lua_pushboolean(L, TRUE);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "toTable");
-	lua_pushcfunction(L, luajs_jsobject_toTable);
-	lua_rawset(L, -3);
+
+	luaL_Reg reg_array[] = {
+		{"__gc", luajs_jsvar__gc},
+		{"__index", luajs_jsarray__index},
+		{"__newindex", luajs_jsarray__newindex},
+		{"__len", luajs_jsarray__len},
+		{"__pairs", luajs_jsarray__ipairs},
+		{"__ipairs", luajs_jsarray__ipairs},
+		{"toTable", luajs_jsobject_toTable},
+		{"__isJavascript", luajs_jsvar__isJavascript},
+		{NULL, NULL}
+	};
+	luaL_setfuncs(L, reg_array, 0);
 	
 	lua_rawset(L, -3);
 	//END: Create metatables
@@ -391,25 +374,15 @@ lua_State* jslua_new_state() {
 	lua_pushstring(L, "__mt_js_object");
 	lua_newtable(L);
 	
-	lua_pushstring(L, "__gc");
-	lua_pushcfunction(L, luajs_jsvar__gc);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "__index");
-	lua_pushcfunction(L, luajs_jsobject__index);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "__newindex");
-	lua_pushcfunction(L, luajs_jsobject__newindex);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "toTable");
-	lua_pushcfunction(L, luajs_jsobject_toTable);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "__isJavascript");
-	lua_pushboolean(L, TRUE);
-	lua_rawset(L, -3);
+	luaL_Reg reg_object[] = {
+		{"__gc", luajs_jsvar__gc},
+		{"__index", luajs_jsobject__index},
+		{"__newindex", luajs_jsobject__newindex},
+		{"toTable", luajs_jsobject_toTable},
+		{"__isJavascript", luajs_jsvar__isJavascript},
+		{NULL, NULL}
+	};
+	luaL_setfuncs(L, reg_object, 0);
 	
 	lua_rawset(L, -3);
 	//END: Create metatables
@@ -418,25 +391,16 @@ lua_State* jslua_new_state() {
 	lua_pushstring(L, "__mt_js_function");
 	lua_newtable(L);
 	
-	lua_pushstring(L, "__gc");
-	lua_pushcfunction(L, luajs_jsvar__gc);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "__index");
-	lua_pushcfunction(L, luajs_jsobject__index);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "__newindex");
-	lua_pushcfunction(L, luajs_jsobject__newindex);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "__call");
-	lua_pushcfunction(L, luajs_call);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "__isJavascript");
-	lua_pushboolean(L, TRUE);
-	lua_rawset(L, -3);
+	luaL_Reg reg_function[] = {
+		{"__gc", luajs_jsvar__gc},
+		{"__index", luajs_jsobject__index},
+		{"__newindex", luajs_jsobject__newindex},
+		{"__call", luajs_jsfunction__call},
+		{"toTable", luajs_jsobject_toTable},
+		{"__isJavascript", luajs_jsvar__isJavascript},
+		{NULL, NULL}
+	};
+	luaL_setfuncs(L, reg_function, 0);
 	
 	lua_rawset(L, -3);
 	//END: Create metatables
@@ -445,13 +409,12 @@ lua_State* jslua_new_state() {
 	lua_pushstring(L, "__mt_js_unknown");
 	lua_newtable(L);
 	
-	lua_pushstring(L, "__gc");
-	lua_pushcfunction(L, luajs_jsvar__gc);
-	lua_rawset(L, -3);
-	
-	lua_pushstring(L, "__isJavascript");
-	lua_pushboolean(L, TRUE);
-	lua_rawset(L, -3);
+	luaL_Reg reg_unknown[] = {
+		{"__gc", luajs_jsvar__gc},
+		{"__isJavascript", luajs_jsvar__isJavascript},
+		{NULL, NULL}
+	};
+	luaL_setfuncs(L, reg_unknown, 0);
 	
 	lua_rawset(L, -3);
 	//END: Create metatables
@@ -470,40 +433,40 @@ lua_State* jslua_new_state() {
 	//END: Load js.global
 	
 	jslua_execute(L, " \
-		local function __jsmt_addrecurse(tbl)												\
-			local tbl_toTable = tbl.toTable													\
-			 function tbl:toTable(recursive, maxDepth)										\
-				local ret = tbl_toTable(self)												\
-				if not recursive then return ret end										\
-				maxDepth = (maxDepth or 10) - 1												\
-				if maxDepth <= 0 then return nil end										\
-				local k,v																	\
-				for k,v in next, ret do														\
-					if v and type(v) == 'userdata' and v.__isJavascript and v.toTable then	\
-						ret[k] = v:toTable(true, maxDepth)									\
-					end																		\
-				end																			\
-				return ret																	\
-			 end																			\
-		end																					\
-		function js.__mt_js_object:__pairs()												\
-			local _tbl = self																\
-			local _arr = js.global.Object.keys(_tbl)										\
-			local _arrInv = {}																\
-			for k, v in ipairs(_arr) do														\
-				_arrInv[v] = k																\
-			end																				\
-			local _next = ipairs(_arr)														\
-			return function(_, lastIdx)														\
-				local nextIdx, nextValue = _next(_arrInv[lastIdx])							\
-				if nextIdx then																\
-					return nextValue, _tbl[nextValue]										\
-				end																			\
-				return nil																	\
-			end																				\
-		end																					\
-		__jsmt_addrecurse(js.__mt_js_object)												\
-		__jsmt_addrecurse(js.__mt_js_array)													\
+		local function __jsmt_addrecurse(tbl)																		\
+			local tbl_toTable = tbl.toTable																			\
+			 function tbl:toTable(recursive, maxDepth)																\
+				local ret = tbl_toTable(self)																		\
+				if not recursive then return ret end																\
+				maxDepth = (maxDepth or 10) - 1																		\
+				if maxDepth <= 0 then return nil end																\
+				local k,v																							\
+				for k,v in next, ret do																				\
+					if v and type(v) == 'userdata' and v.__isJavascript and v:__isJavascript() and v.toTable then	\
+						ret[k] = v:toTable(true, maxDepth)															\
+					end																								\
+				end																									\
+				return ret																							\
+			 end																									\
+		end																											\
+		function js.__mt_js_object:__pairs()																		\
+			local _tbl = self																						\
+			local _arr = js.global.Object.keys(_tbl)																\
+			local _arrInv = {}																						\
+			for k, v in ipairs(_arr) do																				\
+				_arrInv[v] = k																						\
+			end																										\
+			local _next = ipairs(_arr)																				\
+			return function(_, lastIdx)																				\
+				local nextIdx, nextValue = _next(_arrInv[lastIdx])													\
+				if nextIdx then																						\
+					return nextValue, _tbl[nextValue]																\
+				end																									\
+				return nil																							\
+			end																										\
+		end																											\
+		__jsmt_addrecurse(js.__mt_js_object)																		\
+		__jsmt_addrecurse(js.__mt_js_array)																			\
 	");
 	
 	return L;
