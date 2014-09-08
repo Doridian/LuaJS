@@ -50,6 +50,7 @@ exports = (function() {
 		["jslua_pop_number", "number", ["number"]],
 		["jslua_push_number", "", ["number", "number"]],
 		["jslua_push_jsvar", "", ["number", "number", "number"]],
+		["jslua_pop_jsvar", "", ["number", "number"]],
 		["lua_gettable", "", ["number", "number"]],
 		["lua_settable", "", ["number", "number"]],
 		["jslua_toref", "number", ["number", "number"]],
@@ -140,6 +141,8 @@ exports = (function() {
 					return ret;
 				}
 				return tbl;
+			case luaTypes.userdata:
+				return luaPassedVars[luaNative.pop_jsvar(state, pos)][0];
 			case luaTypes.function:
 				var ret = new LuaFunction(state, luaNative.toref(state, pos));
 				if(convertArgs)

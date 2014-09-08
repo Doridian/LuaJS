@@ -156,6 +156,11 @@ static int luajs_eval(lua_State *L) {
 #define GET_TypedPointerData() \
 	PEEK_TypedPointerData(1); \
 	lua_remove(L, 1);
+	
+int jslua_pop_jsvar(lua_State *L, int pos) {
+	PEEK_TypedPointerData(pos);
+	return data->ptr;
+}
 
 static int luajs_call(lua_State *L) {
 	GET_TypedPointerData();
@@ -431,6 +436,10 @@ lua_State* jslua_new_state() {
 	lua_pushcfunction(L, luajs_jsvar__gc);
 	lua_rawset(L, -3);
 	
+	lua_pushstring(L, "__index");
+	lua_pushcfunction(L, luajs_jsobject__index);
+	lua_rawset(L, -3);
+	
 	lua_pushstring(L, "__call");
 	lua_pushcfunction(L, luajs_call);
 	lua_rawset(L, -3);
@@ -486,6 +495,22 @@ lua_State* jslua_new_state() {
 				end																			\
 				return ret																	\
 			 end																			\
+		end																					\
+		function js.__mt_js_object:__pairs()												\
+			local _tbl = self																\
+			local _arr = js.global.Object.keys(_tbl)										\
+			local _arrInv = {}																\
+			for k, v in ipairs(_arr) do														\
+				_arrInv[v] = k																\
+			end																				\
+			local _next = ipairs(_arr)														\
+			return function(_, lastIdx)														\
+				local nextIdx, nextValue = _next(_arrInv[lastIdx])							\
+				if nextIdx then																\
+					return nextValue, _tbl[nextValue]										\
+				end																			\
+				return nil																	\
+			end																				\
 		end																					\
 		__jsmt_addrecurse(js.__mt_js_object)												\
 		__jsmt_addrecurse(js.__mt_js_array)													\

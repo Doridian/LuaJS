@@ -63,6 +63,7 @@ BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_lua_tonumberx',\
 '_lua_rawset',\
 '_lua_rawseti',\
+'_jslua_pop_jsvar',\
 ]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16
 
 ALL_O= $(BINARY_O)
