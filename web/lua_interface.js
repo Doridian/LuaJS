@@ -166,29 +166,27 @@ exports = (function() {
 	
 	var luaLastRefIdx = -1;
 	var luaPassedVars = {};
-	luaPassedVars[-1] = [_GLOBAL, null, -1];
+	luaPassedVars[-1] = [_GLOBAL, -1];
 	
-	function luaGetVarPtr(varObj, varRef) {
-		if(varRef === undefined)
-			varRef = null;
-			
+	function luaGetVarPtr(varObj) {
 		for(var idx in luaPassedVars) {
 			var ptr = luaPassedVars[idx];
-			if(ptr[0] == varObj && ptr[1] == varRef) {
-				ptr[2]++;
+			if(ptr[0] == varObj) {
+				if(ptr[1] > 0)
+					ptr[1]++;
 				return idx;
 			}
 		}
 		
-		luaPassedVars[++luaLastRefIdx] = [varObj, varRef, 1];
+		luaPassedVars[++luaLastRefIdx] = [varObj, 1];
 		return luaLastRefIdx;
 	}
 	
 	function luaRemoveVarPtr(varPtr) {
-		var refCounter = luaPassedVars[varPtr][2];
+		var refCounter = luaPassedVars[varPtr][1];
 		
 		if(refCounter > 1)
-			luaPassedVars[varPtr][2]--;
+			luaPassedVars[varPtr][1]--;
 		else if(refCounter >= 0)
 			delete luaPassedVars[varPtr];
 	}
@@ -231,14 +229,22 @@ exports = (function() {
 		return luaPassedVars[index][0];
 	}
 	
-	function luaCallFunction(func, funcThis, state, stack_size, convertArgs) {
-		var variables = decode_stack(state, stack_size, convertArgs);
+	function luaCallFunction(func, state, stack_size, convertArgs) {
+		var variables, funcThis;
+		if(stack_size > 0) {
+			variables = decode_stack(state, stack_size, convertArgs);
+			funcThis = variables[0];
+			variables = variables.slice(1);
+		} else {
+			funcThis = null;
+			variables = [];
+		}
 		push_var(state, func.apply(funcThis, variables));
 	}
 	
 	function luaCallFunctionPointer(funcPtr, state, stack_size, convertArgs) {
 		var varPtr = luaPassedVars[funcPtr];
-		return luaCallFunction(varPtr[0], varPtr[1], state, stack_size, convertArgs);
+		return luaCallFunction(varPtr[0], state, stack_size, convertArgs);
 	}
 	
 	Module.ccall("__jslua_set_fp", "", ["number", "number"], [Runtime.addFunction(luaCallFunctionPointer), Runtime.addFunction(luaRemoveVarPtr)]);

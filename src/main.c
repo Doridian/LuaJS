@@ -73,7 +73,7 @@ lua_State* jslua_new_state() {
 		end																											\
 		function js.__mt_js_object:__pairs()																		\
 			local _tbl = self																						\
-			local _arr = js.global.Object.keys(_tbl)																\
+			local _arr = js.global.Object:keys(_tbl)																\
 			local _arrInv = {}																						\
 			for k, v in ipairs(_arr) do																				\
 				_arrInv[v] = k																						\
