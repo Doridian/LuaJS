@@ -28,8 +28,10 @@ MYOBJS=
 
 LUA_A=	$(LUA_SRC)/liblua.a
 
-BINARY_T=js_interface.js
-BINARY_O=js_interface.o
+LIB_O= jsvar.o jslua_basetypes.o jslua_eval.o jsvar.o jsvar_object.o jsvar_array.o jsvar_function.o
+
+BINARY_T=main.js
+BINARY_O=main.o
 BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_main',\
 '_jslua_execute',\
@@ -66,7 +68,7 @@ BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_jslua_pop_jsvar',\
 ]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16
 
-ALL_O= $(BINARY_O)
+ALL_O= $(LIB_O) $(BINARY_O)
 ALL_T= $(BINARY_T)
 
 # Targets start here.
@@ -76,8 +78,8 @@ all:	$(ALL_T)
 
 o:	$(ALL_O)
 
-$(BINARY_T): $(BINARY_O)
-	$(CC) -o $@ $(LDFLAGS) $(BINARY_O) $(LUA_A) $(LIBS) $(BINARY_ARGS)
+$(BINARY_T): $(ALL_O)
+	$(CC) -o $@ $(LDFLAGS) $(LIB_O) $(BINARY_O) $(LUA_A) $(LIBS) $(BINARY_ARGS)
 
 clean:
 	$(RM) $(ALL_T) $(ALL_O)

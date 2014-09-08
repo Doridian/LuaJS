@@ -1,1 +1,1 @@
-../src/js_interface.js
+../src/main.js
