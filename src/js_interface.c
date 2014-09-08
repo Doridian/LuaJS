@@ -146,12 +146,15 @@ static int luajs_eval(lua_State *L) {
 	}, L, str);
 }
 
-#define GET_TypedPointerData() \
+#define PEEK_TypedPointerData() \
 	if(!lua_isuserdata(L, 1)) { \
 		lua_pushstring(L, "Invalid self"); \
 		lua_error(L); \
 	} \
-	TypedPointerData *data = (TypedPointerData*)lua_touserdata(L, 1); \
+	TypedPointerData *data = (TypedPointerData*)lua_touserdata(L, 1);
+
+#define GET_TypedPointerData() \
+	PEEK_TypedPointerData(); \
 	lua_remove(L, 1);
 
 static int luajs_call(lua_State *L) {
@@ -173,58 +176,98 @@ static int luajs_jsvar__gc(lua_State *L) {
 	return 0;
 }
 
-#define POP_NUMBER_OR_STR_TO_VAL() \
-	int val; boolean isString = FALSE; \
-	if(lua_isnumber(L, -1)) { \
-		val = lua_tonumber(L, -1); \
-	} else { \
-		val = (int)lua_tostring(L, -1); \
-		isString = TRUE; \
-	} \
-	lua_pop(L, 1);
-
 static int luajs_jsobject__index(lua_State *L) {
-	POP_NUMBER_OR_STR_TO_VAL();
+	const char *val = lua_tostring(L, -1);
+	lua_pop(L, 1);
 	
 	GET_TypedPointerData();
 	
-	if(isString) {
-		jslua_get_metatable(L, data->type);
-		lua_pushstring(L, (char*)val);
-		
-		lua_rawget(L, -2);
-		lua_remove(L, 1);
-		lua_remove(L, 1);
-		
-		if(lua_isnil(L, -1))
-			lua_pop(L, 1);
-		else
-			return 1;
-	}
+	jslua_get_metatable(L, data->type);
+	lua_pushstring(L, val);
+	
+	lua_rawget(L, -2);
+	lua_remove(L, 1);
+	lua_remove(L, 1);
+	
+	if(lua_isnil(L, -1))
+		lua_pop(L, 1);
+	else
+		return 1;
 	
 	return EM_ASM_INT({
-		if($3)
-			$2 = Pointer_stringify($2);
+		$2 = Pointer_stringify($2);
 		var val = __luajs_get_var_by_ref($1);
-		__luajs_push_var($0, val[$2], val);
+		__luajs_push_var($0, val[$2]);
 		return 1;
-	}, L, data->ptr, val, isString);
+	}, L, data->ptr, val);
 }
 
 static int luajs_jsobject__newindex(lua_State *L) {
 	int refIdx = luaL_ref(L, LUA_REGISTRYINDEX);
 	
-	POP_NUMBER_OR_STR_TO_VAL();
+	const char *val = lua_tostring(L, -1);
+	lua_pop(L, 1);
 	
 	GET_TypedPointerData();
 	
 	lua_rawgeti(L, LUA_REGISTRYINDEX, refIdx);
 	int ret = EM_ASM_INT({
-		if($3)
-			$2 = Pointer_stringify($2);
+		$2 = Pointer_stringify($2);
 		__luajs_get_var_by_ref($1)[$2] = __luajs_decode_single($0, -1, true);
 		return 0;
-	}, L, data->ptr, val, isString);
+	}, L, data->ptr, val);
+	lua_pop(L, 1);
+	luaL_unref(L, LUA_REGISTRYINDEX, refIdx);
+	
+	return ret;
+}
+
+static int luajs_jsarray__index(lua_State *L) {
+	if(lua_isstring(L, -1)) {
+		const char *val = lua_tostring(L, -1);
+		lua_pop(L, 1);
+		
+		GET_TypedPointerData();
+		
+		jslua_get_metatable(L, data->type);
+		lua_pushstring(L, val);
+		
+		lua_rawget(L, -2);
+		lua_remove(L, 1);
+		lua_remove(L, 1);
+		
+		if(lua_isnil(L, -1)) {
+			lua_pop(L, 1);
+			return 0;
+		} else
+			return 1;		
+	}
+	
+	int num = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+
+	GET_TypedPointerData();
+	
+	return EM_ASM_INT({
+		var val = __luajs_get_var_by_ref($1);
+		__luajs_push_var($0, val[$2]);
+		return 1;
+	}, L, data->ptr, num);
+}
+
+static int luajs_jsarray__newindex(lua_State *L) {
+	int refIdx = luaL_ref(L, LUA_REGISTRYINDEX);
+	
+	int val = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	
+	GET_TypedPointerData();
+	
+	lua_rawgeti(L, LUA_REGISTRYINDEX, refIdx);
+	int ret = EM_ASM_INT({
+		__luajs_get_var_by_ref($1)[$2] = __luajs_decode_single($0, -1, true);
+		return 0;
+	}, L, data->ptr, val);
 	lua_pop(L, 1);
 	luaL_unref(L, LUA_REGISTRYINDEX, refIdx);
 	
@@ -269,6 +312,38 @@ static int luajs_jsobject_toTable(lua_State *L) {
 	return 1;
 }
 
+static int luajs_jsarray__inext(lua_State *L) {
+	PEEK_TypedPointerData();
+	
+	int num = lua_tonumber(L, -1);
+	
+	int res = EM_ASM_INT({
+		var val = __luajs_get_var_by_ref($1);
+		if($2 >= val.length)
+			return 0;
+		__luajs_push_var($0, val[$2]);
+		return $2 + 1;
+	}, L, data->ptr, num);
+	
+	lua_pushnumber(L, res);
+	lua_replace(L, -3);
+	
+	if(res)
+		return 2;
+		
+	lua_pushnil(L);
+	return 1;
+}
+
+static int luajs_jsarray__ipairs(lua_State *L) {
+	int refIdx = luaL_ref(L, LUA_REGISTRYINDEX);
+	
+	lua_pushcfunction(L, luajs_jsarray__inext);
+	lua_rawgeti(L, LUA_REGISTRYINDEX, refIdx);
+	
+	luaL_unref(L, LUA_REGISTRYINDEX, refIdx);
+	return 2;
+}
 
 lua_State* jslua_new_state() {
 	lua_State* L = luaL_newstate();  /* create state */
@@ -296,15 +371,23 @@ lua_State* jslua_new_state() {
 	lua_rawset(L, -3);
 	
 	lua_pushstring(L, "__index");
-	lua_pushcfunction(L, luajs_jsobject__index);
+	lua_pushcfunction(L, luajs_jsarray__index);
 	lua_rawset(L, -3);
 	
 	lua_pushstring(L, "__newindex");
-	lua_pushcfunction(L, luajs_jsobject__newindex);
+	lua_pushcfunction(L, luajs_jsarray__newindex);
 	lua_rawset(L, -3);
 	
 	lua_pushstring(L, "__len");
 	lua_pushcfunction(L, luajs_jsarray__len);
+	lua_rawset(L, -3);
+	
+	lua_pushstring(L, "__pairs");
+	lua_pushcfunction(L, luajs_jsarray__ipairs);
+	lua_rawset(L, -3);
+	
+	lua_pushstring(L, "__ipairs");
+	lua_pushcfunction(L, luajs_jsarray__ipairs);
 	lua_rawset(L, -3);
 	
 	lua_pushstring(L, "__isJavascript");
