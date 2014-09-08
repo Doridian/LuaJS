@@ -228,25 +228,8 @@ static int luajs_jsobject__newindex(lua_State *L) {
 }
 
 static int luajs_jsarray__index(lua_State *L) {
-	if(lua_isstring(L, -1)) {
-		const char *val = lua_tostring(L, -1);
-		lua_pop(L, 1);
-		
-		GET_TypedPointerData();
-		
-		jslua_get_metatable(L, data->type);
-		lua_pushstring(L, val);
-		
-		lua_rawget(L, -2);
-		lua_remove(L, 1);
-		lua_remove(L, 1);
-		
-		if(lua_isnil(L, -1)) {
-			lua_pop(L, 1);
-			return 0;
-		} else
-			return 1;		
-	}
+	if(lua_isstring(L, -1))
+		return luajs_jsobject__index(L);
 	
 	int num = lua_tonumber(L, -1);
 	lua_pop(L, 1);
@@ -261,6 +244,9 @@ static int luajs_jsarray__index(lua_State *L) {
 }
 
 static int luajs_jsarray__newindex(lua_State *L) {
+	if(lua_isstring(L, -2))
+		return luajs_jsobject__newindex(L);
+	
 	int refIdx = luaL_ref(L, LUA_REGISTRYINDEX);
 	
 	int val = lua_tonumber(L, -1);
@@ -438,6 +424,10 @@ lua_State* jslua_new_state() {
 	
 	lua_pushstring(L, "__index");
 	lua_pushcfunction(L, luajs_jsobject__index);
+	lua_rawset(L, -3);
+	
+	lua_pushstring(L, "__newindex");
+	lua_pushcfunction(L, luajs_jsobject__newindex);
 	lua_rawset(L, -3);
 	
 	lua_pushstring(L, "__call");
