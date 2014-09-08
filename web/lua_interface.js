@@ -145,7 +145,7 @@ exports = (function() {
 				return luaPassedVars[luaNative.pop_jsvar(state, pos)][0];
 			case luaTypes.function:
 				var ret = new LuaFunction(state, luaNative.toref(state, pos));
-				if(convertArgs)
+				if(convertArgs) //Warning: Leaks reference whenever function is not needed anymore
 					return ret.getClosure();
 				return ret;
 			default:
@@ -301,9 +301,11 @@ exports = (function() {
 
 	LuaFunction.prototype.getClosure = function() {
 		var func = this;
-		return function() {
+		var ret = function() {
 			LuaFunction.prototype.call.apply(func, arguments);
 		};
+		ret._LuaFunction = func;
+		return ret;
 	}
 
 	LuaFunction.prototype.call = function() {
