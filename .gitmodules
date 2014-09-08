@@ -1,4 +1,4 @@
 [submodule "lua"]
 	path = lua
-	url = https://github.com/LuaJS/lua.git
-	branch = luajs
+	url = https://github.com/lua/lua
+	branch = 5.2
