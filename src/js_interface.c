@@ -146,15 +146,15 @@ static int luajs_eval(lua_State *L) {
 	}, L, str);
 }
 
-#define PEEK_TypedPointerData() \
-	if(!lua_isuserdata(L, 1)) { \
+#define PEEK_TypedPointerData(INDEX) \
+	if(!lua_isuserdata(L, INDEX)) { \
 		lua_pushstring(L, "Invalid self"); \
 		lua_error(L); \
 	} \
-	TypedPointerData *data = (TypedPointerData*)lua_touserdata(L, 1);
+	TypedPointerData *data = (TypedPointerData*)lua_touserdata(L, INDEX);
 
 #define GET_TypedPointerData() \
-	PEEK_TypedPointerData(); \
+	PEEK_TypedPointerData(1); \
 	lua_remove(L, 1);
 
 static int luajs_call(lua_State *L) {
@@ -313,7 +313,7 @@ static int luajs_jsobject_toTable(lua_State *L) {
 }
 
 static int luajs_jsarray__inext(lua_State *L) {
-	PEEK_TypedPointerData();
+	PEEK_TypedPointerData(lua_upvalueindex(1));
 	
 	int num = lua_tonumber(L, -1);
 	
@@ -336,13 +336,8 @@ static int luajs_jsarray__inext(lua_State *L) {
 }
 
 static int luajs_jsarray__ipairs(lua_State *L) {
-	int refIdx = luaL_ref(L, LUA_REGISTRYINDEX);
-	
-	lua_pushcfunction(L, luajs_jsarray__inext);
-	lua_rawgeti(L, LUA_REGISTRYINDEX, refIdx);
-	
-	luaL_unref(L, LUA_REGISTRYINDEX, refIdx);
-	return 2;
+	lua_pushcclosure(L, luajs_jsarray__inext, 1);
+	return 1;
 }
 
 lua_State* jslua_new_state() {
