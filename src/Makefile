@@ -5,15 +5,10 @@
 
 LUA_SRC=../lua/src
 
-#CC= gcc
 CFLAGS= -O2 -I$(LUA_SRC) -Wall -DLUA_COMPAT_ALL $(SYSCFLAGS) $(MYCFLAGS)
-#LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
 LIBS= $(SYSLIBS) $(MYLIBS)
 
-#AR= ar rcu
 AR_ARGS=rcu
-#RANLIB= ranlib
-#RM= rm -f
 
 SYSCFLAGS=
 SYSLDFLAGS=
@@ -23,6 +18,11 @@ MYCFLAGS=
 MYLDFLAGS=
 MYLIBS=
 MYOBJS=
+
+MKDIR=mkdir -p
+
+INSTALL=install -p -m 0644 
+INSTALL_DEST=../dist
 
 # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
 
@@ -65,6 +65,8 @@ BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_jslua_pop_jsvar',\
 ]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16 --pre-js lua_interface.js --preload-file "../fsroot/@/"
 
+BINARY_FILES=luajs.data luajs.js.mem $(BINARY_T)
+
 ALL_O= $(LIB_O) $(BINARY_O)
 ALL_T= $(BINARY_T)
 
@@ -79,10 +81,14 @@ $(BINARY_T): $(LUA_A) lua_interface.js $(ALL_O)
 	$(CC) -o $@ $(LDFLAGS) $(LIB_O) $(BINARY_O) $(LUA_A) $(LIBS) $(BINARY_ARGS)
 
 clean:
-	$(RM) $(ALL_T) $(ALL_O)
+	$(RM) $(ALL_T) $(ALL_O) $(BINARY_FILES)
 
 depend:
 	@$(CC) $(CFLAGS) -MM l*.c
+
+install: $(BINARY_T)
+	$(MKDIR) $(INSTALL_DEST)
+	$(INSTALL) $(BINARY_FILES) $(INSTALL_DEST)
 
 echo:
 	@echo "CC= $(CC)"

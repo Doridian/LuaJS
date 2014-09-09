@@ -6,7 +6,7 @@ Lua VM running in Javascript (using emscripten)
 Build instructions
 ------------------
 
-Run `emmake make` then you can just open index.htm in the web folder.
+Run `emmake make && emmake make install` then you have the compiled files in the dist folder.
 
 Usage of Lua from JavaScript
 ----------------------------
