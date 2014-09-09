@@ -475,7 +475,7 @@
 		});		
 	}
 	
-	var _exports = {
+	_GLOBAL.LuaJS = {
 		State: LuaState,
 		Function: LuaFunction,
 		Table: LuaTable,
@@ -487,10 +487,4 @@
 		__decode_single: decode_single,
 		__onready: initialize_cfuncs,
 	};
-	
-	_GLOBAL.LuaJS = {};
-	
-	for(var idx in _exports)
-		if(_exports.hasOwnProperty(idx))
-			_GLOBAL.LuaJS[idx] = _exports[idx];
 })();
