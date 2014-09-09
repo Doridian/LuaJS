@@ -1,7 +1,7 @@
 default: all
 
 all:	patch
-	cd lua && make generic
+	cd lua && make linux
 	cd src && make
 
 clean:

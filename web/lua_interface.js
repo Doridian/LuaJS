@@ -33,61 +33,20 @@ exports = (function() {
 		var funcRegex = /^(js)?lua_/;
 		arr.forEach(function(value) {
 			target[value[0].replace(funcRegex, "")] = Module.cwrap(value[0], value[1], value[2]);
+			/*
+			var cf = Module.cwrap(value[0], value[1], value[2]);
+			target[value[0].replace(funcRegex, "")] = function() {
+				console.log(value[0], arguments);
+				return cf.apply(this, arguments);
+			}
+			*/
 		});
 		return target;
 	}
 	
-	var luaNative = importFromC([
-		["jslua_execute", "number", ["number", "string"]],
-		["jslua_call", "number", ["number", "number"]],
-		["lua_settop", "", ["number", "number"]],
-		["lua_gettop", "number", ["number"]],
-		["lua_type", "number", ["number", "number"]],
-		["jslua_new_state", "number", []],
-		["jslua_delete_state", "", ["number"]],
-		["jslua_pop_string", "string", ["number"]],
-		["jslua_push_string", "", ["number", "string"]],
-		["jslua_pop_number", "number", ["number"]],
-		["jslua_push_number", "", ["number", "number"]],
-		["jslua_push_jsvar", "", ["number", "number", "number"]],
-		["jslua_pop_jsvar", "", ["number", "number"]],
-		["lua_gettable", "", ["number", "number"]],
-		["lua_settable", "", ["number", "number"]],
-		["jslua_toref", "number", ["number", "number"]],
-		["jslua_push_ref", "", ["number", "number"]],
-		["jslua_unref", "", ["number", "number"]],
-		["lua_createtable", "", ["number"]],
-		["lua_pushvalue", "", ["number", "number"]],
-		["lua_pushnil", "", ["number"]],
-		["lua_next", "", ["number", "number"]],
-		["lua_tolstring", "string", ["number", "number", "number"]],
-		["lua_tonumberx", "number", ["number", "number", "number"]],
-		["lua_getmetatable", "number", ["number", "number"]],
-		["lua_setmetatable", "number", ["number", "number"]],
-		["lua_rawseti", "", ["number", "number"]],
-		["lua_rawset", "", ["number", "number"]],
-	]);
-	
+	var luaNative = null;
 	
 	var lua_state_tbl = {};
-	
-	luaNative.pop = function pop(state, n) {
-		luaNative.settop(state, -n-1);
-	}
-	
-	luaNative.pop_ref = function pop_ref(state) {
-		var ref = luaNative.toref(state, -1);
-		luaNative.pop(state, 1);
-		return ref;
-	}
-	
-	luaNative.tostring = function tostring(a, b) {
-		return luaNative.tolstring(a, b, 0);
-	}
-	
-	luaNative.tonumber = function tonumber(state, i) {
-		return luaNative.tonumberx(state, i, 0);
-	}
 	
 	var luaTypes = {
 		nil:			0,
@@ -116,14 +75,6 @@ exports = (function() {
 		LUA_GLOBALSINDEX:	-10002,
 		LUA_RIDX_GLOBALS:	2
 	};
-
-	var MOD_PATH = {
-		"lua": "/usr/local/share/lua/5.2/",
-		"c": "/usr/local/lib/lua/5.2/",
-	};
-
-	for(var idx in MOD_PATH)
-		FS.createPath("/", MOD_PATH[idx].substr(1), true, true);
 	
 	function decode_single(state, pos, convertArgs) {
 		switch(luaNative.type(state, pos)) {
@@ -247,8 +198,58 @@ exports = (function() {
 		return luaCallFunction(varPtr[0], state, stack_size, convertArgs);
 	}
 	
-	Module.ccall("__jslua_set_fp", "", ["number", "number"], [Runtime.addFunction(luaCallFunctionPointer), Runtime.addFunction(luaRemoveVarPtr)]);
-	
+	function initialize_cfuncs() {
+		luaNative = importFromC([
+			["jslua_execute", "number", ["number", "string"]],
+			["jslua_call", "number", ["number", "number"]],
+			["lua_settop", "", ["number", "number"]],
+			["lua_gettop", "number", ["number"]],
+			["lua_type", "number", ["number", "number"]],
+			["jslua_new_state", "number", []],
+			["jslua_delete_state", "", ["number"]],
+			["jslua_pop_string", "string", ["number"]],
+			["jslua_push_string", "", ["number", "string"]],
+			["jslua_pop_number", "number", ["number"]],
+			["jslua_push_number", "", ["number", "number"]],
+			["jslua_push_jsvar", "", ["number", "number", "number"]],
+			["jslua_pop_jsvar", "", ["number", "number"]],
+			["lua_gettable", "", ["number", "number"]],
+			["lua_settable", "", ["number", "number"]],
+			["jslua_toref", "number", ["number", "number"]],
+			["jslua_push_ref", "", ["number", "number"]],
+			["jslua_unref", "", ["number", "number"]],
+			["lua_createtable", "", ["number"]],
+			["lua_pushvalue", "", ["number", "number"]],
+			["lua_pushnil", "", ["number"]],
+			["lua_next", "", ["number", "number"]],
+			["lua_tolstring", "string", ["number", "number", "number"]],
+			["lua_tonumberx", "number", ["number", "number", "number"]],
+			["lua_getmetatable", "number", ["number", "number"]],
+			["lua_setmetatable", "number", ["number", "number"]],
+			["lua_rawseti", "", ["number", "number"]],
+			["lua_rawset", "", ["number", "number"]],
+		]);
+		
+		luaNative.pop = function pop(state, n) {
+			luaNative.settop(state, -n-1);
+		}
+		
+		luaNative.pop_ref = function pop_ref(state) {
+			var ref = luaNative.toref(state, -1);
+			luaNative.pop(state, 1);
+			return ref;
+		}
+		
+		luaNative.tostring = function tostring(a, b) {
+			return luaNative.tolstring(a, b, 0);
+		}
+		
+		luaNative.tonumber = function tonumber(state, i) {
+			return luaNative.tonumberx(state, i, 0);
+		}
+		
+		Module.ccall("__jslua_set_fp", "", ["number", "number"], [Runtime.addFunction(luaCallFunctionPointer), Runtime.addFunction(luaRemoveVarPtr)]);
+	}
 	
 	//Everything below is OO
 	
@@ -400,6 +401,8 @@ exports = (function() {
 		this.state = luaNative.new_state();
 		this.refArray = {};
 		lua_state_tbl[this.state] = this;
+		
+		this.run("dofile('/lua/init.lua')");
 	}
 	
 	LuaState.prototype.unrefAll = function() {
@@ -432,21 +435,6 @@ exports = (function() {
 	LuaState.prototype.createTable = function() {
 		luaNative.createtable(this.state, 0, 0);
 		return new LuaTable(this.state, luaNative.pop_ref(this.state));
-	}
-	
-	LuaState.prototype.require = function(libname, type) {
-		var extension;
-		if(type == "lua")
-			extension = ".lua";
-		else
-			throw new Error("Unsupported type");
-		
-		var self = this;
-		
-		return ajaxPromise('modules/' + libname + extension).then(function(data) {
-			FS.createDataFile(MOD_PATH[type], libname + extension, data, true, true);
-			self.run(libname + ' = require"' + libname + '"');
-		});
 	}
 
 	LuaState.prototype.loadDocumentScripts = function(doc) {
@@ -498,7 +486,8 @@ exports = (function() {
 		__luajs_luaNative: luaNative,
 		__luajs_push_var: push_var,
 		__luajs_get_var_by_ref: __luajs_get_var_by_ref,
-		__luajs_decode_single: decode_single
+		__luajs_decode_single: decode_single,
+		__luajs_onready: initialize_cfuncs,
 	};  
 })();
 

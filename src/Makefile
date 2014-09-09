@@ -35,10 +35,8 @@ BINARY_O=main.o
 BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_main',\
 '_jslua_execute',\
-'_jslua_get_stack_size',\
 '_jslua_pop_string',\
 '_jslua_pop_number',\
-'_jslua_empty_stack',\
 '_jslua_new_state',\
 '_jslua_delete_state',\
 '_jslua_toref',\
@@ -59,14 +57,13 @@ BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_lua_type',\
 '_lua_setmetatable',\
 '_lua_getmetatable',\
-'_lua_tonumber',\
 '_lua_settop',\
 '_lua_gettop',\
 '_lua_tonumberx',\
 '_lua_rawset',\
 '_lua_rawseti',\
 '_jslua_pop_jsvar',\
-]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16
+]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16 --preload-file "../fsroot/@/"
 
 ALL_O= $(LIB_O) $(BINARY_O)
 ALL_T= $(BINARY_T)

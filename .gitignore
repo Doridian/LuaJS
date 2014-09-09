@@ -1,2 +1,5 @@
 src/*.js
+src/*.js.*
+src/*.data
+src/*.mem
 src/*.[oa]
