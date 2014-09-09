@@ -5,7 +5,6 @@ local function __jsmt_addrecurse(tbl)
 		if not recursive then return ret end
 		maxDepth = (maxDepth or 10) - 1
 		if maxDepth <= 0 then return nil end
-		local k,v
 		for k,v in next, ret do
 			if v and type(v) == 'userdata' and v.__isJavascript and v:__isJavascript() and v.toTable then
 				ret[k] = v:toTable(true, maxDepth)
