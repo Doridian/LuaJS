@@ -16,7 +16,7 @@ int luajs_eval(lua_State *L) {
 	const char *str = lua_tostring(L, -1);
 	lua_pop(L, 1);
 	return EM_ASM_INT({
-		__luajs_push_var($0, eval(Pointer_stringify($1)));
+		LuaJS.__push_var($0, eval(Pointer_stringify($1)));
 		return 1;
 	}, L, str);
 }
@@ -63,7 +63,8 @@ void jslua_delete_state(lua_State* L) {
 
 int main() {
 	EM_ASM({
-		__luajs_onready();
+		LuaJS.__onready();
+		delete LuaJS.__onready;
 	});
 	emscripten_exit_with_live_runtime();
 	return 0;

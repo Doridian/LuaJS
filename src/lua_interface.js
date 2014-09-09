@@ -1,12 +1,10 @@
-var __luajs_push_var, __luajs_push_var_ref;
-
-var _GLOBAL;
-if(window)
-	_GLOBAL = window;
-else if(global)
-	_GLOBAL = global;
-
-exports = (function() {
+(function() {
+	var _GLOBAL;
+	if(window)
+		_GLOBAL = window;
+	else if(global)
+		_GLOBAL = global;
+	
 	function inherit(childClass, parentClass) {
 		childClass.prototype = Object.create(parentClass.prototype);
 		childClass.prototype.constructor = childClass;
@@ -176,7 +174,7 @@ exports = (function() {
 		}
 	}
 	
-	function __luajs_get_var_by_ref(index) {
+	function get_var_by_ref(index) {
 		return luaPassedVars[index][0];
 	}
 	
@@ -477,22 +475,22 @@ exports = (function() {
 		});		
 	}
 	
-	return {
-		LuaState: LuaState,
-		LuaFunction: LuaFunction,
-		LuaTable: LuaTable,
-		LuaReference: LuaReference,
+	var _exports = {
+		State: LuaState,
+		Function: LuaFunction,
+		Table: LuaTable,
+		Reference: LuaReference,
 		
-		__luajs_luaNative: luaNative,
-		__luajs_push_var: push_var,
-		__luajs_get_var_by_ref: __luajs_get_var_by_ref,
-		__luajs_decode_single: decode_single,
-		__luajs_onready: initialize_cfuncs,
-	};  
+		__luaNative: luaNative,
+		__push_var: push_var,
+		__get_var_by_ref: get_var_by_ref,
+		__decode_single: decode_single,
+		__onready: initialize_cfuncs,
+	};
+	
+	_GLOBAL.LuaJS = {};
+	
+	for(var idx in _exports)
+		if(_exports.hasOwnProperty(idx))
+			_GLOBAL.LuaJS[idx] = _exports[idx];
 })();
-
-for(var idx in exports) {
-	if(exports.hasOwnProperty(idx))
-		_GLOBAL[idx] = exports[idx];
-}
-

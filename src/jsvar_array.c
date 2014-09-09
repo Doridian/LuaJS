@@ -35,8 +35,8 @@ int luajs_jsarray__index(lua_State *L) {
 	GET_TypedPointerData();
 	
 	return EM_ASM_INT({
-		var val = __luajs_get_var_by_ref($1);
-		__luajs_push_var($0, val[$2]);
+		var val = LuaJS.__get_var_by_ref($1);
+		LuaJS.__push_var($0, val[$2]);
 		return 1;
 	}, L, data->ptr, num);
 }
@@ -54,7 +54,7 @@ int luajs_jsarray__newindex(lua_State *L) {
 	
 	lua_rawgeti(L, LUA_REGISTRYINDEX, refIdx);
 	int ret = EM_ASM_INT({
-		__luajs_get_var_by_ref($1)[$2] = __luajs_decode_single($0, -1, true);
+		LuaJS.__get_var_by_ref($1)[$2] = LuaJS.__decode_single($0, -1, true);
 		return 0;
 	}, L, data->ptr, val);
 	lua_pop(L, 1);
@@ -67,7 +67,7 @@ int luajs_jsarray__len(lua_State *L) {
 	GET_TypedPointerData();
 	
 	int len = EM_ASM_INT({
-		return __luajs_get_var_by_ref($0).length;
+		return LuaJS.__get_var_by_ref($0).length;
 	}, data->ptr);
 	
 	lua_pushnumber(L, len);
@@ -80,10 +80,10 @@ int luajs_jsarray__inext(lua_State *L) {
 	int num = lua_tonumber(L, -1);
 	
 	int res = EM_ASM_INT({
-		var val = __luajs_get_var_by_ref($1);
+		var val = LuaJS.__get_var_by_ref($1);
 		if($2 >= val.length)
 			return 0;
-		__luajs_push_var($0, val[$2]);
+		LuaJS.__push_var($0, val[$2]);
 		return $2 + 1;
 	}, L, data->ptr, num);
 	
