@@ -30,8 +30,8 @@ LUA_A=	$(LUA_SRC)/liblua.a
 
 LIB_O= jsvar.o jslua_basetypes.o jslua_eval.o jsvar.o jsvar_object.o jsvar_array.o jsvar_function.o
 
-BINARY_T=main.js
-BINARY_O=main.o
+BINARY_T=luajs.js
+BINARY_O=luajs.o
 BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_main',\
 '_jslua_execute',\
@@ -63,7 +63,7 @@ BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_lua_rawset',\
 '_lua_rawseti',\
 '_jslua_pop_jsvar',\
-]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16 --preload-file "../fsroot/@/"
+]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16 --pre-js lua_interface.js --preload-file "../fsroot/@/"
 
 ALL_O= $(LIB_O) $(BINARY_O)
 ALL_T= $(BINARY_T)
@@ -75,7 +75,7 @@ all:	$(ALL_T)
 
 o:	$(ALL_O)
 
-$(BINARY_T): $(ALL_O)
+$(BINARY_T): $(LUA_A) lua_interface.js $(ALL_O)
 	$(CC) -o $@ $(LDFLAGS) $(LIB_O) $(BINARY_O) $(LUA_A) $(LIBS) $(BINARY_ARGS)
 
 clean:

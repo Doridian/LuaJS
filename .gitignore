@@ -1,5 +1,3 @@
-src/*.js
-src/*.js.*
-src/*.data
-src/*.mem
+src/luajs.*
+!src/luajs.c
 src/*.[oa]
