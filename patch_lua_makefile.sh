@@ -28,7 +28,8 @@ if [ ! -e "$PATCH_FILE_BACKUP" ]; then
 	s/\$\(AR\)/$(ARR)/g; t
 
 	# Remove some variables
-	s/^(CC|LDFLAGS|RANLIB|RM)=/#\0/; t
+	s/^(CC|RANLIB|RM)=/#\0/; t
+	#s/^(CC|LDFLAGS|RANLIB|RM)=/#\0/; t
 
 	# Replace AR assignment
 	s/^AR=.*$/ARR=$(AR) rcu/; t
