@@ -7,11 +7,6 @@
 #include "jsvar_function.h"
 #include "jsvar_array.h"
 
-void __jslua_set_fp(LUA_CFP cfp, LUA_RVP rfp) {
-	luaCallFunctionPointer = cfp;
-	luaRemoveVarPtr = rfp;
-}
-
 int luajs_eval(lua_State *L) {
 	const char *str = lua_tostring(L, -1);
 	lua_pop(L, 1);

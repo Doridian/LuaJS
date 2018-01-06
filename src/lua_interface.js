@@ -131,7 +131,7 @@
 		return luaLastRefIdx;
 	}
 	
-	function luaRemoveVarPtr(varPtr) {
+	Module.__luaRemoveVarPtr = function luaRemoveVarPtr(varPtr) {
 		var refCounter = luaPassedVars[varPtr][1];
 		
 		if(refCounter > 1)
@@ -191,7 +191,7 @@
 		push_var(state, func.apply(funcThis, variables));
 	}
 	
-	function luaCallFunctionPointer(funcPtr, state, stack_size, convertArgs) {
+	Module.__luaCallFunctionPointer = function luaCallFunctionPointer(funcPtr, state, stack_size, convertArgs) {
 		var varPtr = luaPassedVars[funcPtr];
 		return luaCallFunction(varPtr[0], state, stack_size, convertArgs);
 	}
@@ -245,8 +245,6 @@
 		luaNative.tonumber = function tonumber(state, i) {
 			return luaNative.tonumberx(state, i, 0);
 		}
-		
-		Module.ccall("__jslua_set_fp", "", ["number", "number"], [Runtime.addFunction(luaCallFunctionPointer), Runtime.addFunction(luaRemoveVarPtr)]);
 	}
 	
 	//Everything below is OO

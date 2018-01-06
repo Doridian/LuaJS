@@ -3,7 +3,7 @@
 
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
-LUA_SRC=../lua/src
+LUA_SRC=../lua
 
 CFLAGS= -O2 -I$(LUA_SRC) -Wall -DLUA_COMPAT_ALL $(SYSCFLAGS) $(MYCFLAGS)
 LIBS= $(SYSLIBS) $(MYLIBS)
@@ -32,7 +32,11 @@ LIB_O= jsvar.o jslua_basetypes.o jslua_eval.o jsvar.o jsvar_object.o jsvar_array
 
 BINARY_T=luajs.js
 BINARY_O=luajs.o
-BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
+BINARY_ARGS=-O2 -s EXTRA_EXPORTED_RUNTIME_METHODS="[\
+'cwrap',\
+'ccall',\
+]"\
+-s EXPORTED_FUNCTIONS="[\
 '_main',\
 '_jslua_execute',\
 '_jslua_pop_string',\
@@ -46,7 +50,6 @@ BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_jslua_push_string',\
 '_jslua_call',\
 '_jslua_push_jsvar',\
-'___jslua_set_fp',\
 '_lua_gettable',\
 '_lua_settable',\
 '_lua_createtable',\
@@ -63,9 +66,9 @@ BINARY_ARGS=-O2 -s EXPORTED_FUNCTIONS="[\
 '_lua_rawset',\
 '_lua_rawseti',\
 '_jslua_pop_jsvar',\
-]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16 --pre-js lua_interface.js --preload-file "../fsroot/@/"
+]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16 --js-library lua_library.js --pre-js lua_interface.js --preload-file "../fsroot/@/"
 
-BINARY_FILES=luajs.data luajs.js.mem $(BINARY_T)
+BINARY_FILES=luajs.data luajs.wasm $(BINARY_T)
 
 ALL_O= $(LIB_O) $(BINARY_O)
 ALL_T= $(BINARY_T)
@@ -78,7 +81,7 @@ all:	$(ALL_T)
 o:	$(ALL_O)
 
 $(BINARY_T): $(LUA_A) lua_interface.js $(ALL_O)
-	$(CC) -o $@ $(LDFLAGS) $(LIB_O) $(BINARY_O) $(LUA_A) $(LIBS) $(BINARY_ARGS)
+	$(CC) -s WASM=1 -o $@ $(LDFLAGS) $(LIB_O) $(BINARY_O) $(LUA_A) $(LIBS) $(BINARY_ARGS)
 
 clean:
 	$(RM) $(ALL_T) $(ALL_O) $(BINARY_FILES)

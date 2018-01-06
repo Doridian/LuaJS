@@ -4,5 +4,5 @@
 #define _longjmp longjmp
 #define _setjmp setjmp
 
-#define random rand
-#define srandom srand
+//#define random rand
+//#define srandom srand
