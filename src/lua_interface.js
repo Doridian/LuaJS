@@ -6,10 +6,6 @@
 		_GLOBAL = global;
 	}
 
-	function ajaxPromise(url) {
-		return fetch(url).then((res) => res.text());
-	}
-
 	function importFromC(arr) {
 		const target = {};
 		const funcRegex = /^(js)?lua_/;
@@ -78,8 +74,9 @@
 				}
 				return ret;
 			default:
-				if (convertArgs)
+				if (convertArgs) {
 					return null;
+				}
 				return new LuaReference(state, luaNative.toref(state, pos));
 		}
 	}
@@ -313,8 +310,9 @@
 				try {
 					push_var(this.state, arguments[i])
 				} catch (e) {
-					for (; i >= 0; i--)
+					for (; i >= 0; i--) {
 						luaNative.pop(this.state, 1);
+					}
 					throw e;
 				}
 			}
@@ -425,41 +423,56 @@
 			return new LuaTable(this.state, luaNative.pop_ref(this.state));
 		}
 
-		loadDocumentScripts(doc) {
+		async __runNode(node) {
+			let code = node.textContent;
+			if (node.src) {
+				const res = await fetch(node.src);
+				code = await res.text();
+			}
+			this.run(code);
+		}
+
+		async __tryRunNode(node) {
+			try {
+				await this.__runNode(node);
+			} catch (e) {
+				console.error("Error loading script from", node, e);
+			}
+		}
+
+		async loadDocumentScripts(doc) {
 			const xPathResult = document.evaluate('//script[@type="text/lua"]', doc, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
 			const scriptPromises = [];
 
 			let node;
 			while (node = xPathResult.iterateNext()) {
-				scriptPromises.push(ajaxPromise(node.src));
+				await this.__tryRunNode(node);
 			}
-
-			Promise.all(scriptPromises).then((scripts) => {
-				scripts.forEach((data) => {
-					this.run(data);
-				});
-			});
 		}
 
 		listenForScripts(doc) {
-			const observer = new MutationObserver((mutations) => {
-				mutations.forEach((mutation) => {
+			const observer = new MutationObserver(async (mutations) => {
+				for (const mutation of mutations)  {
 					if (mutation.type !== "childList") {
-						return;
+						continue;
 					}
 
-					Array.prototype.slice.call(mutation.addedNodes).forEach((node) => {
-						if (node instanceof HTMLScriptElement && node.type.toLowerCase() == "text/lua") {
-							if (node.src) {
-								ajaxPromise(node.src).then((data) => {
-									this.run(data);
-								});
-							} else {
-								this.run(node.textContent);
-							}
+					for (const node of mutation.addedNodes) {
+						if (!(node instanceof HTMLScriptElement)) {
+							continue;
 						}
-					});
-				});
+
+						if (!node.type) {
+							continue;
+						}
+
+						if (node.type.toLowerCase() !== "text/lua") {
+							continue;
+						}
+
+						await this.__tryRunNode(node);
+					}
+				}
 			});
 
 			observer.observe(doc, {
