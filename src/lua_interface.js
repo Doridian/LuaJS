@@ -235,6 +235,10 @@
 	}
 
 	function luaUnref(objectRef) {
+		if (objectRef.state == null || objectRef.index == null) {
+			return;
+		}
+
 		const oldRef = lua_state_tbl[objectRef.state].refArray[objectRef.index];
 		if (oldRef && oldRef === objectRef) {
 			luaNative.unref(objectRef.state, objectRef.index);
