@@ -1,6 +1,9 @@
-#!/bin/sh
+#!/bin/sh\
 
 set -xe
+
+sed=sed
+which gsed && sed=gsed
 
 PATCH_FILE=lua/makefile
 PATCH_FILE_BACKUP=$PATCH_FILE~
@@ -23,7 +26,7 @@ if [ "x$1" = "xclean" ]; then
 fi
 
 if [ ! -e "$PATCH_FILE_BACKUP" ]; then
-	sed -ri~ '
+	$sed -ri~ '
 	# Replace AR with ARR
 	s/\$\(AR\)/$(ARR)/g; t
 
@@ -44,7 +47,7 @@ fi
 
 if [ ! -e "$PATCH_FILE_H_BACKUP" ]; then
 	mv "$PATCH_FILE_H" "$PATCH_FILE_H_BACKUP"
-	sed -r '
+	$sed -r '
 		# We are in the zone => branch
 		/[[:space:]]*\*+[[:space:]]*[Ll]ocal configuration/,+10 b localconfig
 
