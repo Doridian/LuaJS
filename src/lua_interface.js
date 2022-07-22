@@ -263,42 +263,60 @@
 
 	inherit(LuaError, Error);
 
+	function luaUnref(objectRef) {
+		const oldRef = lua_state_tbl[objectRef.state].refArray[objectRef.index];
+		if (oldRef && oldRef === objectRef) {
+			luaNative.unref(objectRef.state, objectRef.index);
+			delete lua_state_tbl[objectRef.state].refArray[objectRef.index];
+		}
+		objectRef.state = null;
+		objectRef.index = null;
+	}
+
+	const luaRefFinalizer = new FinalizationRegistry(luaUnref);
+
 	//LuaRerefence
 	function LuaReference(state, index) {
+		this.refObj = {
+			state,
+			index,
+		};
 		this.state = state;
-		this.index = index;
 		
 		var oldRef = lua_state_tbl[state].refArray[index];
-		if(oldRef)
-			oldRef.unref();
-		lua_state_tbl[state].refArray[index] = this;
+		if(oldRef) {
+			luaUnref(oldRef);
+		}
+		lua_state_tbl[state].refArray[index] = this.refObj;
+		console.log("REF OK", this.refObj);
+
+		luaRefFinalizer.register(this, this.refObj);
 	}
 
 	LuaReference.prototype.unref = function() {
-		luaNative.unref(this.state, this.index);
-		delete lua_state_tbl[this.state].refArray[this.index];
-		this.index = null;
-		this.state = null;
+		luaUnref(this.refObj);
+		luaRefFinalizer.unregister(this);
 	}
 
 	LuaReference.prototype.push = function(state) {
-		if(state && state != this.state)
+		if(state && state != this.refObj.state) {
 			throw new Error("Wrong Lua state");
-		luaNative.push_ref(this.state, this.index);
+		}
+		luaNative.push_ref(this.refObj.state, this.refObj.index);
 	}
 	
 	LuaReference.prototype.getmetatable = function() {
 		this.push();
-		luaNative.getmetatable(this.state, -1);
-		var ret = decode_single(this.state, -1);
-		luaNative.pop(this.state, 1);
+		luaNative.getmetatable(this.refObj.state, -1);
+		var ret = decode_single(this.refObj.state, -1);
+		luaNative.pop(this.refObj.state, 1);
 		return ret;
 	}
 	
 	LuaReference.prototype.setmetatable = function() {
 		this.push();
-		luaNative.setmetatable(this.state, -1);
-		luaNative.pop(this.state, 1);
+		luaNative.setmetatable(this.refObj.state, -1);
+		luaNative.pop(this.refObj.state, 1);
 	}
 
 	//LuaFunction
@@ -408,9 +426,8 @@
 	}
 	
 	LuaState.prototype.unrefAll = function() {
-		for(idx in this.refArray) {
-			var ref = this.refArray[idx];
-			ref.unref();
+		for(ref of this.refArray) {
+			luaUnref(ref);
 		}
 		this.refArray = {};
 	}
