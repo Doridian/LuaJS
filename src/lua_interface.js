@@ -12,19 +12,7 @@
 	}
 
 	function ajaxPromise(url) {
-		return new Promise(function (resolve, reject) {
-			const xmlhttp = new XMLHttpRequest();
-			xmlhttp.onreadystatechange = function () {
-				if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-					if (xmlhttp.status == 200)
-						resolve(xmlhttp.responseText);
-					else
-						reject(xmlhttp.status);
-				}
-			};
-			xmlhttp.open("GET", url, true);
-			xmlhttp.send();
-		});
+		return fetch(url).then((res) => res.text());
 	}
 
 	function importFromC(arr) {
