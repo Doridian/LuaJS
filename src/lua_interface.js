@@ -17,7 +17,7 @@
 
 	const eventEmitter = new EventTarget();
 
-	let luaNative = null;
+	let luaNative = undefined;
 
 	const lua_state_tbl = {};
 
@@ -52,7 +52,7 @@
 	function decode_single(state, pos, convertArgs) {
 		switch (luaNative.type(state, pos)) {
 			case luaTypes.nil:
-				return null;
+				return undefined;
 			case luaTypes.number:
 				return luaNative.tonumber(state, pos);
 			case luaTypes.string:
@@ -75,7 +75,7 @@
 				return ret;
 			default:
 				if (convertArgs) {
-					return null;
+					return undefined;
 				}
 				return new LuaReference(state, luaNative.toref(state, pos));
 		}
@@ -120,15 +120,12 @@
 	}
 
 	function push_var(state, arg, ref) {
-		if (arg === null) {
+		if (arg === null || arg === undefined) {
 			luaNative.pushnil(state);
 			return;
 		}
 
 		switch (typeof arg) {
-			case "undefined":
-				luaNative.pushnil(state);
-				break;
 			case "boolean":
 				luaNative.push_boolean(state, arg ? 1 : 0);
 				break;
@@ -167,7 +164,7 @@
 			funcThis = variables[0];
 			variables = variables.slice(1);
 		} else {
-			funcThis = null;
+			funcThis = undefined;
 			variables = [];
 		}
 
@@ -235,17 +232,24 @@
 	}
 
 	function luaUnref(objectRef) {
-		if (objectRef.state == null || objectRef.index == null) {
+		const index =  objectRef.index;
+		const state = objectRef.state;
+		objectRef.state = undefined;
+		objectRef.index = undefined;
+		if (state === undefined || index === undefined) {
 			return;
 		}
 
-		const oldRef = lua_state_tbl[objectRef.state].refArray[objectRef.index];
-		if (oldRef && oldRef === objectRef) {
-			luaNative.unref(objectRef.state, objectRef.index);
-			delete lua_state_tbl[objectRef.state].refArray[objectRef.index];
+		const oldRef = lua_state_tbl[state].refArray[index];
+		if (!oldRef) {
+			return;
 		}
-		objectRef.state = null;
-		objectRef.index = null;
+		if (oldRef !== objectRef) {
+			return;
+		}
+
+		luaNative.unref(state, index);
+		delete lua_state_tbl[state].refArray[index];
 	}
 
 	const luaRefFinalizer = new FinalizationRegistry(luaUnref);
@@ -268,7 +272,7 @@
 			}
 			lua_state_tbl[state].refArray[index] = this.refObj;
 	
-			luaRefFinalizer.register(this, this.refObj);
+			luaRefFinalizer.register(this, this.refObj, this);
 		}
 
 		unref() {
@@ -406,7 +410,7 @@
 			this.unrefAll();
 			luaNative.delete_state(this.state);
 			delete lua_state_tbl[this.state];
-			this.state = null;
+			this.state = undefined;
 		}
 
 		run(code) {
