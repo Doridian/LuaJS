@@ -40,7 +40,7 @@ int luajs_jsobject__index(lua_State *L) {
 		return 1;
 	
 	return EM_ASM_INT({
-		$2 = Pointer_stringify($2);
+		$2 = UTF8ToString($2);
 		var val = LuaJS.__get_var_by_ref($1);
 		LuaJS.__push_var($0, val[$2]);
 		return 1;
@@ -57,7 +57,7 @@ int luajs_jsobject__newindex(lua_State *L) {
 	
 	lua_rawgeti(L, LUA_REGISTRYINDEX, refIdx);
 	int ret = EM_ASM_INT({
-		$2 = Pointer_stringify($2);
+		$2 = UTF8ToString($2);
 		LuaJS.__get_var_by_ref($1)[$2] = LuaJS.__decode_single($0, -1, true);
 		return 0;
 	}, L, data->ptr, val);

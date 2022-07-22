@@ -41,6 +41,8 @@
 		});
 		return target;
 	}
+
+	var eventEmitter = new EventTarget();
 	
 	var luaNative = null;
 	
@@ -227,6 +229,8 @@
 			["lua_rawseti", "", ["number", "number"]],
 			["lua_rawset", "", ["number", "number"]],
 		]);
+
+		_GLOBAL.LuaJS.__luaNative = luaNative;
 		
 		luaNative.pop = function pop(state, n) {
 			luaNative.settop(state, -n-1);
@@ -245,6 +249,8 @@
 		luaNative.tonumber = function tonumber(state, i) {
 			return luaNative.tonumberx(state, i, 0);
 		}
+
+		eventEmitter.dispatchEvent(new Event("ready"));
 	}
 	
 	//Everything below is OO
@@ -360,7 +366,7 @@
 	LuaTable.prototype.toObject = function(recurse, unrefAll, maxDepth) {
 		this.push();
 		luaNative.pushnil(this.state);
-		var ret = {}
+		var ret = {};
 		while(luaNative.next(this.state, -2)) {
 			luaNative.pushvalue(this.state, -2);
 			var key = luaNative.tostring(this.state, -1);
@@ -376,8 +382,8 @@
 		if(recurse) {
 			maxDepth--;
 			
-			var ret_iter = ret.slice(0);
-			for(var idx in ret_iter) {
+			var ret_iter = Object.keys(ret);
+			for(var idx of ret_iter) {
 				var val = ret[idx];
 				if(val instanceof LuaTable && maxDepth > 0) {
 					ret[idx] = val.toObject(true, unrefAll, maxDepth);
@@ -478,6 +484,8 @@
 		Function: LuaFunction,
 		Table: LuaTable,
 		Reference: LuaReference,
+
+		eventEmitter: eventEmitter,
 		
 		__luaNative: luaNative,
 		__push_var: push_var,
