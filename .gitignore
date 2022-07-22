@@ -1,5 +1,6 @@
-/dist
 .vscode
+.DS_Store
+/dist
 /src/luajs.*
 !/src/luajs.c
 /src/*.[oa]
