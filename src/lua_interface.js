@@ -1,21 +1,21 @@
-(function() {
+(function () {
 	var _GLOBAL;
-	if(window)
+	if (window)
 		_GLOBAL = window;
-	else if(global)
+	else if (global)
 		_GLOBAL = global;
-	
+
 	function inherit(childClass, parentClass) {
 		childClass.prototype = Object.create(parentClass.prototype);
 		childClass.prototype.constructor = childClass;
 	}
-	
+
 	function ajaxPromise(url) {
-		return new Promise(function(resolve, reject) {
+		return new Promise(function (resolve, reject) {
 			var xmlhttp = new XMLHttpRequest();
-			xmlhttp.onreadystatechange = function() {
-				if (xmlhttp.readyState==XMLHttpRequest.DONE) {
-					if(xmlhttp.status == 200)
+			xmlhttp.onreadystatechange = function () {
+				if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+					if (xmlhttp.status == 200)
 						resolve(xmlhttp.responseText);
 					else
 						reject(xmlhttp.status);
@@ -25,11 +25,11 @@
 			xmlhttp.send();
 		});
 	}
-	
+
 	function importFromC(arr) {
 		var target = {};
 		var funcRegex = /^(js)?lua_/;
-		arr.forEach(function(value) {
+		arr.forEach(function (value) {
 			target[value[0].replace(funcRegex, "")] = Module.cwrap(value[0], value[1], value[2]);
 			/*
 			var cf = Module.cwrap(value[0], value[1], value[2]);
@@ -43,41 +43,41 @@
 	}
 
 	var eventEmitter = new EventTarget();
-	
+
 	var luaNative = null;
-	
+
 	var lua_state_tbl = {};
-	
+
 	var luaTypes = {
-		nil:			0,
-		bool:			1,
-		boolean:		1,
-		lightuserdata:	2,
-		number:			3,
-		string:			4,
-		table:			5,
-		function:		6,
-		userdata:		7,
-		thread:			8,
-		coroutine:		8
+		nil: 0,
+		bool: 1,
+		boolean: 1,
+		lightuserdata: 2,
+		number: 3,
+		string: 4,
+		table: 5,
+		function: 6,
+		userdata: 7,
+		thread: 8,
+		coroutine: 8
 	};
-	
+
 	var luaJSDataTypes = {
-		unknown:		0,
-		function: 		1,
-		array:			2,
-		object:			3
+		unknown: 0,
+		function: 1,
+		array: 2,
+		object: 3
 	};
-	
+
 	var luaConstants = {
-		LUA_REGISTRYINDEX:	-10000,
-		LUA_ENVIRONINDEX: 	-10001,
-		LUA_GLOBALSINDEX:	-10002,
-		LUA_RIDX_GLOBALS:	2
+		LUA_REGISTRYINDEX: -10000,
+		LUA_ENVIRONINDEX: -10001,
+		LUA_GLOBALSINDEX: -10002,
+		LUA_RIDX_GLOBALS: 2
 	};
-	
+
 	function decode_single(state, pos, convertArgs) {
-		switch(luaNative.type(state, pos)) {
+		switch (luaNative.type(state, pos)) {
 			case luaTypes.nil:
 				return null;
 			case luaTypes.number:
@@ -86,7 +86,7 @@
 				return luaNative.tostring(state, pos);
 			case luaTypes.table:
 				var tbl = new LuaTable(state, luaNative.toref(state, pos));
-				if(convertArgs) {
+				if (convertArgs) {
 					var ret = tbl.toObject(true, true);
 					tbl.unref();
 					return ret;
@@ -96,58 +96,58 @@
 				return luaPassedVars[luaNative.pop_jsvar(state, pos)][0];
 			case luaTypes.function:
 				var ret = new LuaFunction(state, luaNative.toref(state, pos));
-				if(convertArgs) //Warning: Leaks reference whenever function is not needed anymore
+				if (convertArgs) //Warning: Leaks reference whenever function is not needed anymore
 					return ret.getClosure();
 				return ret;
 			default:
-				if(convertArgs)
+				if (convertArgs)
 					return null;
 				return new LuaReference(state, luaNative.toref(state, pos));
 		}
 	}
-	
+
 	function decode_stack(state, stack_size, convertArgs) {
 		var ret = [];
-		for(var i = 0; i < stack_size; i++) {
+		for (var i = 0; i < stack_size; i++) {
 			ret.unshift(decode_single(state, -1, convertArgs));
 			luaNative.pop(state, 1);
 		}
 		return ret;
 	}
-	
+
 	var luaLastRefIdx = -1;
 	var luaPassedVars = {};
 	luaPassedVars[-1] = [_GLOBAL, -1];
-	
+
 	function luaGetVarPtr(varObj) {
-		for(var idx in luaPassedVars) {
+		for (var idx in luaPassedVars) {
 			var ptr = luaPassedVars[idx];
-			if(ptr[0] == varObj) {
-				if(ptr[1] > 0)
+			if (ptr[0] == varObj) {
+				if (ptr[1] > 0)
 					ptr[1]++;
 				return idx;
 			}
 		}
-		
+
 		luaPassedVars[++luaLastRefIdx] = [varObj, 1];
 		return luaLastRefIdx;
 	}
-	
+
 	Module.__luaRemoveVarPtr = function luaRemoveVarPtr(varPtr) {
 		var refCounter = luaPassedVars[varPtr][1];
-		
-		if(refCounter > 1)
+
+		if (refCounter > 1)
 			luaPassedVars[varPtr][1]--;
-		else if(refCounter >= 0)
+		else if (refCounter >= 0)
 			delete luaPassedVars[varPtr];
 	}
-	
+
 	function push_var(state, arg, ref) {
-		if(arg === null) {
+		if (arg === null) {
 			luaNative.pushnil(state);
 			return;
 		}
-		switch(typeof arg) {
+		switch (typeof arg) {
 			case "undefined":
 				luaNative.pushnil(state);
 				break;
@@ -164,9 +164,9 @@
 				luaNative.push_jsvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.function);
 				break;
 			case "object":
-				if(arg instanceof LuaReference)
+				if (arg instanceof LuaReference)
 					arg.push(state);
-				else if(arg instanceof Array)
+				else if (arg instanceof Array)
 					luaNative.push_jsvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.array);
 				else
 					luaNative.push_jsvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.object);
@@ -175,14 +175,14 @@
 				throw new LuaError("Unhandled value push: " + arg);
 		}
 	}
-	
+
 	function get_var_by_ref(index) {
 		return luaPassedVars[index][0];
 	}
-	
+
 	function luaCallFunction(func, state, stack_size, convertArgs) {
 		var variables, funcThis;
-		if(stack_size > 0) {
+		if (stack_size > 0) {
 			variables = decode_stack(state, stack_size, convertArgs);
 			funcThis = variables[0];
 			variables = variables.slice(1);
@@ -192,12 +192,12 @@
 		}
 		push_var(state, func.apply(funcThis, variables));
 	}
-	
+
 	Module.__luaCallFunctionPointer = function luaCallFunctionPointer(funcPtr, state, stack_size, convertArgs) {
 		var varPtr = luaPassedVars[funcPtr];
 		return luaCallFunction(varPtr[0], state, stack_size, convertArgs);
 	}
-	
+
 	function initialize_cfuncs() {
 		luaNative = importFromC([
 			["jslua_execute", "number", ["number", "string"]],
@@ -231,30 +231,30 @@
 		]);
 
 		_GLOBAL.LuaJS.__luaNative = luaNative;
-		
+
 		luaNative.pop = function pop(state, n) {
-			luaNative.settop(state, -n-1);
+			luaNative.settop(state, -n - 1);
 		}
-		
+
 		luaNative.pop_ref = function pop_ref(state) {
 			var ref = luaNative.toref(state, -1);
 			luaNative.pop(state, 1);
 			return ref;
 		}
-		
+
 		luaNative.tostring = function tostring(a, b) {
 			return luaNative.tolstring(a, b, 0);
 		}
-		
+
 		luaNative.tonumber = function tonumber(state, i) {
 			return luaNative.tonumberx(state, i, 0);
 		}
 
 		eventEmitter.dispatchEvent(new Event("ready"));
 	}
-	
+
 	//Everything below is OO
-	
+
 	//LuaError
 	function LuaError(msg) {
 		Error.apply(this, arguments);
@@ -282,9 +282,9 @@
 			index,
 		};
 		this.state = state;
-		
+
 		var oldRef = lua_state_tbl[state].refArray[index];
-		if(oldRef) {
+		if (oldRef) {
 			luaUnref(oldRef);
 		}
 		lua_state_tbl[state].refArray[index] = this.refObj;
@@ -293,27 +293,27 @@
 		luaRefFinalizer.register(this, this.refObj);
 	}
 
-	LuaReference.prototype.unref = function() {
+	LuaReference.prototype.unref = function () {
 		luaUnref(this.refObj);
 		luaRefFinalizer.unregister(this);
 	}
 
-	LuaReference.prototype.push = function(state) {
-		if(state && state != this.refObj.state) {
+	LuaReference.prototype.push = function (state) {
+		if (state && state != this.refObj.state) {
 			throw new Error("Wrong Lua state");
 		}
 		luaNative.push_ref(this.refObj.state, this.refObj.index);
 	}
-	
-	LuaReference.prototype.getmetatable = function() {
+
+	LuaReference.prototype.getmetatable = function () {
 		this.push();
 		luaNative.getmetatable(this.refObj.state, -1);
 		var ret = decode_single(this.refObj.state, -1);
 		luaNative.pop(this.refObj.state, 1);
 		return ret;
 	}
-	
-	LuaReference.prototype.setmetatable = function() {
+
+	LuaReference.prototype.setmetatable = function () {
 		this.push();
 		luaNative.setmetatable(this.refObj.state, -1);
 		luaNative.pop(this.refObj.state, 1);
@@ -326,53 +326,53 @@
 
 	inherit(LuaFunction, LuaReference);
 
-	LuaFunction.prototype.getClosure = function() {
+	LuaFunction.prototype.getClosure = function () {
 		var func = this;
-		var ret = function() {
+		var ret = function () {
 			LuaFunction.prototype.call.apply(func, arguments);
 		};
 		ret._LuaFunction = func;
 		return ret;
 	}
 
-	LuaFunction.prototype.call = function() {
+	LuaFunction.prototype.call = function () {
 		this.push(this.state);
-		
-		for(var i = 0; i < arguments.length; i++) {
+
+		for (var i = 0; i < arguments.length; i++) {
 			try {
 				push_var(this.state, arguments[i])
-			} catch(e) {
-				for(;i>=0;i--)
+			} catch (e) {
+				for (; i >= 0; i--)
 					luaNative.pop(this.state, 1);
 				throw e;
 			}
 		}
-		
+
 		var stack = luaNative.call(this.state, arguments.length);
 		var ret = decode_stack(this.state, Math.abs(stack));
 		if (stack < 0)
 			throw new LuaError(ret[0]);
 		return ret;
 	}
-	
+
 	//LuaTable
 	function LuaTable() {
 		LuaReference.apply(this, arguments);
 	}
-	
+
 	inherit(LuaTable, LuaReference);
-	
-	LuaTable.prototype.set = function(key, value) {
+
+	LuaTable.prototype.set = function (key, value) {
 		var type = typeof key;
 		this.push();
 		push_var(this.state, key);
 		push_var(this.state, value);
 		luaNative.settable(this.state, -3);
 		luaNative.pop(this.state, 1);
-		
+
 	}
-	
-	LuaTable.prototype.get = function(key) {
+
+	LuaTable.prototype.get = function (key) {
 		this.push();
 		push_var(this.state, key);
 		luaNative.gettable(this.state, -2);
@@ -380,12 +380,12 @@
 		luaNative.pop(this.state, 2);
 		return ret;
 	}
-	
-	LuaTable.prototype.toObject = function(recurse, unrefAll, maxDepth) {
+
+	LuaTable.prototype.toObject = function (recurse, unrefAll, maxDepth) {
 		this.push();
 		luaNative.pushnil(this.state);
 		var ret = {};
-		while(luaNative.next(this.state, -2)) {
+		while (luaNative.next(this.state, -2)) {
 			luaNative.pushvalue(this.state, -2);
 			var key = luaNative.tostring(this.state, -1);
 			var value = decode_single(this.state, -2);
@@ -393,26 +393,26 @@
 			luaNative.pop(this.state, 2);
 		}
 		luaNative.pop(this.state, 1);
-		
-		if(!maxDepth)
+
+		if (!maxDepth)
 			maxDepth = 10;
-		
-		if(recurse) {
+
+		if (recurse) {
 			maxDepth--;
-			
+
 			var ret_iter = Object.keys(ret);
-			for(var idx of ret_iter) {
+			for (var idx of ret_iter) {
 				var val = ret[idx];
-				if(val instanceof LuaTable && maxDepth > 0) {
+				if (val instanceof LuaTable && maxDepth > 0) {
 					ret[idx] = val.toObject(true, unrefAll, maxDepth);
 					val.unref();
-				} else if(unrefAll && value instanceof LuaReference) {
+				} else if (unrefAll && value instanceof LuaReference) {
 					val.unref();
 					delete ret[idx];
 				}
 			}
 		}
-		
+
 		return ret;
 	}
 
@@ -421,81 +421,81 @@
 		this.state = luaNative.new_state();
 		this.refArray = {};
 		lua_state_tbl[this.state] = this;
-		
+
 		this.run("dofile('/lua/init.lua')");
 	}
-	
-	LuaState.prototype.unrefAll = function() {
-		for(ref of this.refArray) {
+
+	LuaState.prototype.unrefAll = function () {
+		for (ref of this.refArray) {
 			luaUnref(ref);
 		}
 		this.refArray = {};
 	}
 
-	LuaState.prototype.close = function() {
+	LuaState.prototype.close = function () {
 		this.unrefAll();
 		luaNative.delete_state(this.state);
 		delete lua_state_tbl[this.state];
 		this.state = null;
 	}
 
-	LuaState.prototype.run = function(code) {
+	LuaState.prototype.run = function (code) {
 		var stack = luaNative.execute(this.state, code);
 		var ret = decode_stack(this.state, Math.abs(stack));
 		if (stack < 0)
 			throw new LuaError(ret[0]);
 		return ret;
 	}
-	
-	LuaState.prototype.getGlobalTable = function() {
+
+	LuaState.prototype.getGlobalTable = function () {
 		return new LuaTable(this.state, luaConstants.LUA_RIDX_GLOBALS);
 	}
-	
-	LuaState.prototype.createTable = function() {
+
+	LuaState.prototype.createTable = function () {
 		luaNative.createtable(this.state, 0, 0);
 		return new LuaTable(this.state, luaNative.pop_ref(this.state));
 	}
 
-	LuaState.prototype.loadDocumentScripts = function(doc) {
+	LuaState.prototype.loadDocumentScripts = function (doc) {
 		var self = this;
-		var xPathResult = document.evaluate( '//script[@type="text/lua"]', doc, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
+		var xPathResult = document.evaluate('//script[@type="text/lua"]', doc, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
 		var node;
 		var scriptPromises = [];
-		while(node = xPathResult.iterateNext()) {
+		while (node = xPathResult.iterateNext()) {
 			scriptPromises.push(ajaxPromise(node.src));
 		}
-		
-		Promise.all(scriptPromises).then(function(scripts) {
-			scripts.forEach(function(data) {
+
+		Promise.all(scriptPromises).then(function (scripts) {
+			scripts.forEach(function (data) {
 				self.run(data);
 			});
 		});
 	}
 
-	LuaState.prototype.listenForScripts = function(doc) {
+	LuaState.prototype.listenForScripts = function (doc) {
 		var self = this;
-		var observer = new MutationObserver(function(mutations) {
-			mutations.forEach(function(mutation) {
-				if(mutation.type == "childList") {
-					Array.prototype.slice.call(mutation.addedNodes).forEach(function(node) {
-						if(node instanceof HTMLScriptElement && node.type.toLowerCase() == "text/lua") {
-							if(node.src)
-								ajaxPromise(node.src).then(function(data) {
+		var observer = new MutationObserver(function (mutations) {
+			mutations.forEach(function (mutation) {
+				if (mutation.type == "childList") {
+					Array.prototype.slice.call(mutation.addedNodes).forEach(function (node) {
+						if (node instanceof HTMLScriptElement && node.type.toLowerCase() == "text/lua") {
+							if (node.src)
+								ajaxPromise(node.src).then(function (data) {
 									self.run(data);
 								});
 							else
 								self.run(node.textContent);
 						}
 					});
-				}	
+				}
 			});
-		});    
+		});
 		observer.observe(doc, {
 			childList: true,
 			subtree: true
-		});		
+		});
 	}
-	
+
 	_GLOBAL.LuaJS = {
 		State: LuaState,
 		Function: LuaFunction,
@@ -503,7 +503,7 @@
 		Reference: LuaReference,
 
 		eventEmitter: eventEmitter,
-		
+
 		__luaNative: luaNative,
 		__push_var: push_var,
 		__get_var_by_ref: get_var_by_ref,
