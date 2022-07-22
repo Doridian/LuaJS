@@ -496,7 +496,8 @@
 		Table: LuaTable,
 		Reference: LuaReference,
 
-		eventEmitter: eventEmitter,
+		addEventListener: eventEmitter.addEventListener.bind(eventEmitter),
+		removeEventListener: eventEmitter.removeEventListener.bind(eventEmitter),
 
 		__luaNative: luaNative,
 		__push_var: push_var,

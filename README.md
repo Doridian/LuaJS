@@ -12,7 +12,7 @@ Usage of Lua from JavaScript
 ----------------------------
 
 ```javascript
-LuaJS.eventEmitter.addEventListener("ready", () => {
+LuaJS.addEventListener("ready", () => {
     const L = new LuaJS.State();
     let value;
     value = L.run("return 1+2"); //value == [3]
