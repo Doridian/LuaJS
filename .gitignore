@@ -4,4 +4,3 @@
 !/src/luajs.c
 /src/*.[oa]
 /src/*.html
-/lua.makefile
