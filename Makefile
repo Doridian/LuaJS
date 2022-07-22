@@ -1,7 +1,7 @@
 default: all
 
-all:	patch
-	cd lua && make
+all: patch
+	cd lua && make -f makefile.patched
 	cd src && make
 
 clean:
@@ -10,7 +10,7 @@ clean:
 	sh -e ./patch_lua_makefile.sh clean
 
 install: all
-	cd  src && make install
+	cd src && make install
 
 patch:
 	sh -e ./patch_lua_makefile.sh

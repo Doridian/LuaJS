@@ -1,6 +1,7 @@
-src/luajs.*
-!src/luajs.c
-src/*.[oa]
-dist
+/dist
 .vscode
-src/*.html
+/src/luajs.*
+!/src/luajs.c
+/src/*.[oa]
+/src/*.html
+/lua.makefile
