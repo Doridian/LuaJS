@@ -82,11 +82,11 @@ int luajs_jsobject_toTable(lua_State *L) {
 
 			if(typeof idx == "number") {
 				LuaJS.__pushVar($0, array[idx]);
-				LuaJS.__luaNative.rawseti($0, -2, idx);
+				LuaJS.__luaNative.lua_rawseti($0, -2, idx);
 			} else {
 				LuaJS.__pushVar($0, idx);
 				LuaJS.__pushVar($0, obj[idx]);
-				LuaJS.__luaNative.rawset($0, -3);
+				LuaJS.__luaNative.lua_rawseti($0, -3);
 			}
 		}
 		
