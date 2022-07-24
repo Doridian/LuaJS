@@ -117,7 +117,7 @@
 		} else if (refCounter >= 0) {
 			delete luaPassedVars[varPtr];
 		}
-	}
+	};
 
 	function pushVar(state, arg, ref) {
 		if (arg === null || arg === undefined) {
@@ -174,7 +174,7 @@
 	Module.__luaCallFunctionPointer = function luaCallFunctionPointer(funcPtr, state, stack_size, convertArgs) {
 		const varPtr = luaPassedVars[funcPtr];
 		return luaCallFunction(varPtr[0], state, stack_size, convertArgs);
-	}
+	};
 
 	function initializeCFuncs() {
 		luaNative = importFromC([
@@ -212,21 +212,21 @@
 
 		luaNative.pop = function pop(state, n) {
 			luaNative.settop(state, -n - 1);
-		}
+		};
 
 		luaNative.pop_ref = function pop_ref(state) {
 			const ref = luaNative.toref(state, -1);
 			luaNative.pop(state, 1);
 			return ref;
-		}
+		};
 
 		luaNative.tostring = function tostring(a, b) {
 			return luaNative.tolstring(a, b, 0);
-		}
+		};
 
 		luaNative.tonumber = function tonumber(state, i) {
 			return luaNative.tonumberx(state, i, 0);
-		}
+		};
 
 		eventEmitter.dispatchEvent(new Event("ready"));
 	}

@@ -35,7 +35,7 @@ int luajs_jsarray__index(lua_State *L) {
 	GET_TypedPointerData();
 	
 	return EM_ASM_INT({
-		var val = LuaJS.__getVarByRef($1);
+		const val = LuaJS.__getVarByRef($1);
 		LuaJS.__pushVar($0, val[$2]);
 		return 1;
 	}, L, data->ptr, num);
@@ -80,9 +80,10 @@ int luajs_jsarray__inext(lua_State *L) {
 	int num = lua_tonumber(L, -1);
 	
 	int res = EM_ASM_INT({
-		var val = LuaJS.__getVarByRef($1);
-		if($2 >= val.length)
+		const val = LuaJS.__getVarByRef($1);
+		if($2 >= val.length) {
 			return 0;
+		}
 		LuaJS.__pushVar($0, val[$2]);
 		return $2 + 1;
 	}, L, data->ptr, num);
