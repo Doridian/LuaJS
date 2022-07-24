@@ -24,36 +24,45 @@ end
 __jsmt_addrecurse(js.__mt_js_object)
 __jsmt_addrecurse(js.__mt_js_array)
 
-local __js_Object_keys = js.global.Object.keys
+local __js_Object_entries = js.global.Object.entries
 local __js_Symbol_iterator = js.global.Symbol.iterator
 
-function js.__mt_js_object:__pairs()
+function js.__mt_js_object:iterator()
 	local js_iterator = self[__js_Symbol_iterator]
-	if js_iterator then
-        local js_iterator_instance = js_iterator(self)
-		return function(tbl, idx)
-            local res = js_iterator_instance:next()
-			if (not res.value) and (res.done) then
-				return
-			end
-            return res.value
-        end
+	if not js_iterator then
+		return
 	end
 
-	local tbl = self
-	local arr = __js_Object_keys(nil, tbl)
-	local arrInv = {}
-	for k, v in pairs(arr) do
-		arrInv[v] = k
-	end
-	local _next = pairs(arr)
-	return function(_, lastIdx)
-		local nextIdx, nextValue = _next(arrInv[lastIdx])
-		if nextIdx then
-			return nextValue, tbl[nextValue]
+	local js_iterator_instance = js_iterator(self)
+	return function()
+		local res = js_iterator_instance:next()
+		if (not res.value) and (res.done) then
+			return
 		end
-		return nil
+		return res.value
 	end
+end
+
+function js.__mt_js_object:entries_iterator()
+	local it = self:iterator()
+	if not it then
+		it = __js_Object_entries(nil, self):iterator()
+	end
+	return function()
+		local res = it()
+		if res then
+			return unpack(res)
+		end
+	end
+end
+
+function js.__mt_js_object:__pairs()
+	local it = self:iterator()
+	if it then
+		return it
+	end
+
+	return self:entries_iterator()
 end
 
 package.path = "/lua/modules/?.lua"

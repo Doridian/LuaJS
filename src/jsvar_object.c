@@ -13,7 +13,8 @@ void luajs_jsobject_init(lua_State *L) {
 		{"__index", luajs_jsobject__index},
 		{"__newindex", luajs_jsobject__newindex},
 		{"toTable", luajs_jsobject_toTable},
-		{"__isJavascript", luajs_jsvar__isJavascript},
+		{"__is_javascript", luajs_jsvar__is_javascript},
+		{"jstype", luajs_jsvar_jstype},
 		{NULL, NULL}
 	};
 	luaL_setfuncs(L, reg_object, 0);

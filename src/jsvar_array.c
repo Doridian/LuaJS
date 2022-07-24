@@ -19,7 +19,8 @@ void luajs_jsarray_init(lua_State *L) {
 		{"__pairs", luajs_jsarray__pairs},
 		{"__ipairs", luajs_jsarray__pairs},
 		{"toTable", luajs_jsarray_toTable},
-		{"__isJavascript", luajs_jsvar__isJavascript},
+		{"__is_javascript", luajs_jsvar__is_javascript},
+		{"jstype", luajs_jsvar_jstype},
 		{NULL, NULL}
 	};
 	luaL_setfuncs(L, reg_array, 0);
