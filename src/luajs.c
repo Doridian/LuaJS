@@ -11,7 +11,7 @@ int luajs_eval(lua_State *L) {
 	const char *str = lua_tostring(L, -1);
 	lua_pop(L, 1);
 	return EM_ASM_INT({
-		LuaJS.__push_var($0, eval(UTF8ToString($1)));
+		LuaJS.__pushVar($0, eval(UTF8ToString($1)));
 		return 1;
 	}, L, str);
 }

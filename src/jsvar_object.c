@@ -41,8 +41,8 @@ int luajs_jsobject__index(lua_State *L) {
 	
 	return EM_ASM_INT({
 		$2 = UTF8ToString($2);
-		var val = LuaJS.__get_var_by_ref($1);
-		LuaJS.__push_var($0, val[$2]);
+		var val = LuaJS.__getVarByRef($1);
+		LuaJS.__pushVar($0, val[$2]);
 		return 1;
 	}, L, data->ptr, val);
 }
@@ -58,7 +58,7 @@ int luajs_jsobject__newindex(lua_State *L) {
 	lua_rawgeti(L, LUA_REGISTRYINDEX, refIdx);
 	int ret = EM_ASM_INT({
 		$2 = UTF8ToString($2);
-		LuaJS.__get_var_by_ref($1)[$2] = LuaJS.__decode_single($0, -1, true);
+		LuaJS.__getVarByRef($1)[$2] = LuaJS.__decodeSingle($0, -1, true);
 		return 0;
 	}, L, data->ptr, val);
 	lua_pop(L, 1);
@@ -73,17 +73,17 @@ int luajs_jsobject_toTable(lua_State *L) {
 	lua_newtable(L);
 	
 	EM_ASM_INT({
-		var obj = LuaJS.__get_var_by_ref($1);
+		var obj = LuaJS.__getVarByRef($1);
 		
 		for(var idx in obj) {
 			if(!obj.hasOwnProperty(idx))
 				continue;
 			if(typeof idx == "number") {
-				LuaJS.__push_var($0, array[idx]);
+				LuaJS.__pushVar($0, array[idx]);
 				LuaJS.__luaNative.rawseti($0, -2, idx);
 			} else {
-				LuaJS.__push_var($0, idx);
-				LuaJS.__push_var($0, obj[idx]);
+				LuaJS.__pushVar($0, idx);
+				LuaJS.__pushVar($0, obj[idx]);
 				LuaJS.__luaNative.rawset($0, -3);
 			}
 		}

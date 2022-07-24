@@ -49,7 +49,7 @@
 		LUA_RIDX_GLOBALS: 2
 	};
 
-	function decode_single(state, pos, convertArgs) {
+	function decodeSingle(state, pos, convertArgs) {
 		switch (luaNative.type(state, pos)) {
 			case luaTypes.nil:
 				return undefined;
@@ -81,10 +81,10 @@
 		}
 	}
 
-	function decode_stack(state, stack_size, convertArgs) {
+	function decodeStack(state, stack_size, convertArgs) {
 		const ret = [];
 		for (let i = 0; i < stack_size; i++) {
-			ret.unshift(decode_single(state, -1, convertArgs));
+			ret.unshift(decodeSingle(state, -1, convertArgs));
 			luaNative.pop(state, 1);
 		}
 		return ret;
@@ -119,7 +119,7 @@
 		}
 	}
 
-	function push_var(state, arg, ref) {
+	function pushVar(state, arg, ref) {
 		if (arg === null || arg === undefined) {
 			luaNative.pushnil(state);
 			return;
@@ -152,7 +152,7 @@
 		}
 	}
 
-	function get_var_by_ref(index) {
+	function getVarByRef(index) {
 		return luaPassedVars[index][0];
 	}
 
@@ -160,7 +160,7 @@
 		let variables, funcThis;
 
 		if (stack_size > 0) {
-			variables = decode_stack(state, stack_size, convertArgs);
+			variables = decodeStack(state, stack_size, convertArgs);
 			funcThis = variables[0];
 			variables = variables.slice(1);
 		} else {
@@ -168,7 +168,7 @@
 			variables = [];
 		}
 
-		push_var(state, func.apply(funcThis, variables));
+		pushVar(state, func.apply(funcThis, variables));
 	}
 
 	Module.__luaCallFunctionPointer = function luaCallFunctionPointer(funcPtr, state, stack_size, convertArgs) {
@@ -176,7 +176,7 @@
 		return luaCallFunction(varPtr[0], state, stack_size, convertArgs);
 	}
 
-	function initialize_cfuncs() {
+	function initializeCFuncs() {
 		luaNative = importFromC([
 			["jslua_execute", "number", ["number", "string"]],
 			["jslua_call", "number", ["number", "number"]],
@@ -290,7 +290,7 @@
 		getmetatable() {
 			this.push();
 			luaNative.getmetatable(this.refObj.state, -1);
-			const ret = decode_single(this.refObj.state, -1);
+			const ret = decodeSingle(this.refObj.state, -1);
 			luaNative.pop(this.refObj.state, 1);
 			return ret;
 		}
@@ -316,7 +316,7 @@
 	
 			for (let i = 0; i < arguments.length; i++) {
 				try {
-					push_var(this.state, arguments[i])
+					pushVar(this.state, arguments[i])
 				} catch (e) {
 					for (; i >= 0; i--) {
 						luaNative.pop(this.state, 1);
@@ -326,7 +326,7 @@
 			}
 	
 			const stack = luaNative.call(this.state, arguments.length);
-			const ret = decode_stack(this.state, Math.abs(stack));
+			const ret = decodeStack(this.state, Math.abs(stack));
 			if (stack < 0) {
 				throw new LuaError(ret[0]);
 			}
@@ -338,8 +338,8 @@
 	class LuaTable extends LuaReference {
 		set(key, value) {
 			this.push();
-			push_var(this.state, key);
-			push_var(this.state, value);
+			pushVar(this.state, key);
+			pushVar(this.state, value);
 			luaNative.settable(this.state, -3);
 			luaNative.pop(this.state, 1);
 	
@@ -347,9 +347,9 @@
 	
 		get(key) {
 			this.push();
-			push_var(this.state, key);
+			pushVar(this.state, key);
 			luaNative.gettable(this.state, -2);
-			const ret = decode_single(this.state, -1);
+			const ret = decodeSingle(this.state, -1);
 			luaNative.pop(this.state, 2);
 			return ret;
 		}
@@ -361,7 +361,7 @@
 			while (luaNative.next(this.state, -2)) {
 				luaNative.pushvalue(this.state, -2);
 				const key = luaNative.tostring(this.state, -1);
-				const value = decode_single(this.state, -2);
+				const value = decodeSingle(this.state, -2);
 				ret[key] = value;
 				luaNative.pop(this.state, 2);
 			}
@@ -415,7 +415,7 @@
 
 		run(code) {
 			const stack = luaNative.execute(this.state, code);
-			const ret = decode_stack(this.state, Math.abs(stack));
+			const ret = decodeStack(this.state, Math.abs(stack));
 			if (stack < 0) {
 				throw new LuaError(ret[0]);
 			}
@@ -500,9 +500,9 @@
 		removeEventListener: eventEmitter.removeEventListener.bind(eventEmitter),
 
 		__luaNative: luaNative,
-		__push_var: push_var,
-		__get_var_by_ref: get_var_by_ref,
-		__decode_single: decode_single,
-		__onready: initialize_cfuncs,
+		__pushVar: pushVar,
+		__getVarByRef: getVarByRef,
+		__decodeSingle: decodeSingle,
+		__onready: initializeCFuncs,
 	};
 })();
