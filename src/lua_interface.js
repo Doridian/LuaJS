@@ -38,7 +38,8 @@
 		unknown: 0,
 		function: 1,
 		array: 2,
-		object: 3
+		object: 3,
+		symbol: 4,
 	};
 
 	const luaConstants = {
@@ -65,7 +66,7 @@
 				}
 				return tbl;
 			case luaTypes.userdata:
-				return luaPassedVars[luaNative.jslua_pop_jsvar(state, pos)][0];
+				return luaPassedVars[luaNative.jslua_popvar(state, pos)][0];
 			case luaTypes.function:
 				const ret = new LuaFunction(state, luaNative.jslua_toref(state, pos));
 				if (convertArgs) {
@@ -126,28 +127,26 @@
 
 		switch (typeof arg) {
 			case "boolean":
-				luaNative.jslua_push_boolean(state, arg ? 1 : 0);
+				luaNative.lua_pushboolean(state, arg ? 1 : 0);
 				break;
 			case "number":
-				luaNative.jslua_push_number(state, arg);
+				luaNative.lua_pushnumber(state, arg);
 				break;
 			case "string":
-				luaNative.jslua_push_string(state, arg);
+				luaNative.lua_pushstring(state, arg);
 				break;
 			case "function":
-				luaNative.jslua_push_jsvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.function);
+				luaNative.jslua_pushvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.function);
 				break;
-			case "object":
+			default:
 				if (arg instanceof LuaReference) {
 					arg.push(state);
 				} else if (arg instanceof Array) {
-					luaNative.jslua_push_jsvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.array);
+					luaNative.jslua_pushvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.array);
 				} else {
-					luaNative.jslua_push_jsvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.object);
+					luaNative.jslua_pushvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.object);
 				}
 				break;
-			default:
-				throw new LuaError("Unhandled value push: " + arg);
 		}
 	}
 
@@ -179,22 +178,22 @@
 		luaNative = importFromC([
 			["jslua_execute", "number", ["number", "string"]],
 			["jslua_call", "number", ["number", "number"]],
+			["jslua_new_state", "number", []],
+			["jslua_delete_state", "", ["number"]],
+			["jslua_pushvar", "", ["number", "number", "number"]],
+			["jslua_popvar", "", ["number", "number"]],
+			["jslua_toref", "number", ["number", "number"]],
+			["jslua_pushref", "", ["number", "number"]],
+			["jslua_unref", "", ["number", "number"]],
+			
 			["lua_settop", "", ["number", "number"]],
 			["lua_gettop", "number", ["number"]],
 			["lua_type", "number", ["number", "number"]],
-			["jslua_new_state", "number", []],
-			["jslua_delete_state", "", ["number"]],
-			["jslua_pop_string", "string", ["number"]],
-			["jslua_push_string", "", ["number", "string"]],
-			["jslua_pop_number", "number", ["number"]],
-			["jslua_push_number", "", ["number", "number"]],
-			["jslua_push_jsvar", "", ["number", "number", "number"]],
-			["jslua_pop_jsvar", "", ["number", "number"]],
+			["lua_pushstring", "", ["number", "string"]],
+			["lua_pushnumber", "", ["number", "number"]],
+			["lua_pushboolean", "", ["number", "boolean"]],
 			["lua_gettable", "", ["number", "number"]],
 			["lua_settable", "", ["number", "number"]],
-			["jslua_toref", "number", ["number", "number"]],
-			["jslua_push_ref", "", ["number", "number"]],
-			["jslua_unref", "", ["number", "number"]],
 			["lua_createtable", "", ["number"]],
 			["lua_pushvalue", "", ["number", "number"]],
 			["lua_pushnil", "", ["number"]],
@@ -283,7 +282,7 @@
 			if (state && state != this.refObj.state) {
 				throw new Error("Wrong Lua state");
 			}
-			luaNative.jslua_push_ref(this.refObj.state, this.refObj.index);
+			luaNative.jslua_pushref(this.refObj.state, this.refObj.index);
 		}
 
 		getmetatable() {
@@ -396,6 +395,10 @@
 			lua_state_tbl[this.state] = this;
 	
 			this.run("dofile('/lua/init.lua')");
+		}
+
+		getTop() {
+			return luaNative.lua_gettop(this.state);
 		}
 
 		unrefAll() {

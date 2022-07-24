@@ -24,7 +24,7 @@ void luajs_jsfunction_init(lua_State *L) {
 }
 
 int luajs_jsfunction__call(lua_State *L) {
-	GET_TypedPointerData();
+	GET_SelfTypedPointerData();
 	
 	if(data->type != TYPE_JSFUNCTION) {
 		lua_pushstring(L, "Invalid type");

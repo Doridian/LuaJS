@@ -23,7 +23,7 @@ void luajs_jsvar_init(lua_State *L) {
 	lua_rawset(L, -3);
 }
 
-void jslua_get_metatable(lua_State *L, int type) {
+void jslua_getmetatable(lua_State *L, int type) {
 	switch(type) {
 		case TYPE_JSFUNCTION:
 			GET_LIB_GLOBAL("js", "__mt_js_function")
@@ -40,20 +40,20 @@ void jslua_get_metatable(lua_State *L, int type) {
 	}	
 }
 
-void jslua_push_jsvar(lua_State *L, int varptr, int type) {
+void jslua_pushvar(lua_State *L, int varptr, int type) {
 	TypedPointerData *data = (TypedPointerData*)lua_newuserdata(L, sizeof(TypedPointerData));
 	data->ptr = varptr;
 	data->type = type;
 	
-	jslua_get_metatable(L, type);
+	jslua_getmetatable(L, type);
 	
 	lua_setmetatable(L, -3);
 	
 	lua_pop(L, 1);
 }
 
-int jslua_pop_jsvar(lua_State *L, int pos) {
-	PEEK_TypedPointerData(pos);
+int jslua_popvar(lua_State *L, int pos) {
+	PEEK_SelfTypedPointerData(pos);
 	return data->ptr;
 }
 
@@ -65,7 +65,7 @@ int luajs_jsvar__isJavascript(lua_State *L) {
 }
 
 int luajs_jsvar__gc(lua_State *L) {
-	GET_TypedPointerData();
+	GET_SelfTypedPointerData();
 	luaRemoveVarPtr(data->ptr);
 	return 0;
 }

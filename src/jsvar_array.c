@@ -14,9 +14,11 @@ void luajs_jsarray_init(lua_State *L) {
 		{"__index", luajs_jsarray__index},
 		{"__newindex", luajs_jsarray__newindex},
 		{"__len", luajs_jsarray__len},
-		{"__pairs", luajs_jsarray__ipairs},
-		{"__ipairs", luajs_jsarray__ipairs},
-		{"toTable", luajs_jsobject_toTable},
+		{"__next", luajs_jsarray__next},
+		{"__inext", luajs_jsarray__next},
+		{"__pairs", luajs_jsarray__pairs},
+		{"__ipairs", luajs_jsarray__pairs},
+		{"toTable", luajs_jsarray_toTable},
 		{"__isJavascript", luajs_jsvar__isJavascript},
 		{NULL, NULL}
 	};
@@ -26,13 +28,14 @@ void luajs_jsarray_init(lua_State *L) {
 }
 
 int luajs_jsarray__index(lua_State *L) {
-	if(!lua_isnumber(L, -1))
+	if(!lua_isnumber(L, -1)) {
 		return luajs_jsobject__index(L);
-	
+	}
+
 	int num = lua_tonumber(L, -1);
 	lua_pop(L, 1);
 
-	GET_TypedPointerData();
+	GET_SelfTypedPointerData();
 	
 	return EM_ASM_INT({
 		const val = LuaJS.__getVarByRef($1);
@@ -42,15 +45,16 @@ int luajs_jsarray__index(lua_State *L) {
 }
 
 int luajs_jsarray__newindex(lua_State *L) {
-	if(!lua_isnumber(L, -2))
+	if(!lua_isnumber(L, -2)) {
 		return luajs_jsobject__newindex(L);
-	
+	}
+
 	int refIdx = luaL_ref(L, LUA_REGISTRYINDEX);
 	
 	int val = lua_tonumber(L, -1);
 	lua_pop(L, 1);
 	
-	GET_TypedPointerData();
+	GET_SelfTypedPointerData();
 	
 	lua_rawgeti(L, LUA_REGISTRYINDEX, refIdx);
 	int ret = EM_ASM_INT({
@@ -64,7 +68,7 @@ int luajs_jsarray__newindex(lua_State *L) {
 }
 
 int luajs_jsarray__len(lua_State *L) {
-	GET_TypedPointerData();
+	GET_SelfTypedPointerData();
 	
 	int len = EM_ASM_INT({
 		return LuaJS.__getVarByRef($0).length;
@@ -74,8 +78,8 @@ int luajs_jsarray__len(lua_State *L) {
 	return 1;
 }
 
-int luajs_jsarray__inext(lua_State *L) {
-	PEEK_TypedPointerData(lua_upvalueindex(1));
+int luajs_jsarray__next(lua_State *L) {
+	PEEK_SelfTypedPointerData(lua_upvalueindex(1));
 	
 	int num = lua_tonumber(L, -1);
 	
@@ -87,18 +91,36 @@ int luajs_jsarray__inext(lua_State *L) {
 		LuaJS.__pushVar($0, val[$2]);
 		return $2 + 1;
 	}, L, data->ptr, num);
-	
+
+	if (!res) {
+		return 0;
+	}
+
 	lua_pushnumber(L, res);
 	lua_replace(L, -3);
-	
-	if(res)
-		return 2;
-		
-	lua_pushnil(L);
+	return 2;
+}
+
+int luajs_jsarray__pairs(lua_State *L) {
+	lua_pushcclosure(L, luajs_jsarray__next, 1);
 	return 1;
 }
 
-int luajs_jsarray__ipairs(lua_State *L) {
-	lua_pushcclosure(L, luajs_jsarray__inext, 1);
+int luajs_jsarray_toTable(lua_State *L) {
+	GET_SelfTypedPointerData();
+	
+	lua_newtable(L);
+	
+	EM_ASM_INT({
+		const arr = LuaJS.__getVarByRef($1);
+
+		for (let i = 0; i < arr.length; i++) {
+			LuaJS.__pushVar($0, arr[i]);
+			LuaJS.__luaNative.lua_rawseti($0, -2, i + 1);
+		}
+		
+		return 0;
+	}, L, data->ptr);
+	
 	return 1;
 }

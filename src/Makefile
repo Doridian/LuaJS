@@ -28,7 +28,7 @@ INSTALL_DEST=../dist
 
 LUA_A=	$(LUA_SRC)/liblua.a
 
-LIB_O= jsvar.o jslua_basetypes.o jslua_eval.o jsvar_object.o jsvar_array.o jsvar_function.o
+LIB_O= jsvar.o jslua_ref.o jslua_eval.o jsvar_object.o jsvar_array.o jsvar_function.o
 
 BINARY_T=luajs.js
 BINARY_O=luajs.o
@@ -39,17 +39,15 @@ BINARY_ARGS=-O2 -s EXPORTED_RUNTIME_METHODS="[\
 -s EXPORTED_FUNCTIONS="[\
 '_main',\
 '_jslua_execute',\
-'_jslua_pop_string',\
-'_jslua_pop_number',\
 '_jslua_new_state',\
 '_jslua_delete_state',\
 '_jslua_toref',\
-'_jslua_push_ref',\
+'_jslua_pushref',\
 '_jslua_unref',\
-'_jslua_push_number',\
-'_jslua_push_string',\
+'_lua_pushnumber',\
+'_lua_pushstring',\
 '_jslua_call',\
-'_jslua_push_jsvar',\
+'_jslua_pushvar',\
 '_lua_gettable',\
 '_lua_settable',\
 '_lua_createtable',\
@@ -65,7 +63,8 @@ BINARY_ARGS=-O2 -s EXPORTED_RUNTIME_METHODS="[\
 '_lua_tonumberx',\
 '_lua_rawset',\
 '_lua_rawseti',\
-'_jslua_pop_jsvar'\
+'_jslua_popvar',\
+'_lua_pushboolean'\
 ]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16 --js-library lua_library.js --pre-js lua_interface.js --preload-file "../fsroot/@/"
 
 BINARY_FILES=luajs.data luajs.wasm $(BINARY_T)
