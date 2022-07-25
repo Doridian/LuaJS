@@ -161,23 +161,29 @@
 		}
 	}
 
-	function luaCallFunction(func, state, stackSize, convertArgs) {
-		let variables, funcThis;
+	function luaCallFunction(func, state, stackSize, convertArgs, callWithNew) {
+		let variables, variablesRaw, funcThis;
 
 		if (stackSize > 0) {
-			variables = decodeStack(state, stackSize, convertArgs);
-			funcThis = variables[0];
-			variables = variables.slice(1);
+			variablesRaw = decodeStack(state, stackSize, convertArgs);
+			funcThis = variablesRaw[0];
+			variables = variablesRaw.slice(1);
 		} else {
 			funcThis = undefined;
 			variables = [];
+			variablesRaw = [];
+		}
+
+		if (callWithNew) {
+			pushVar(state, new func(...variablesRaw));
+			return;
 		}
 
 		pushVar(state, func.apply(funcThis, variables));
 	}
 
-	Module.__luaCallFunctionPointer = function luaCallFunctionPointer(funcPtr, state, stackSize, convertArgs) {
-		return luaCallFunction(getVarByRef(funcPtr), state, stackSize, convertArgs);
+	Module.__luaCallFunctionPointer = function luaCallFunctionPointer(funcPtr, state, stackSize, convertArgs, callWithNew) {
+		return luaCallFunction(getVarByRef(funcPtr), state, stackSize, convertArgs, callWithNew);
 	};
 
 	function initializeCFuncs() {
@@ -311,12 +317,12 @@
 			return LuaFunction.prototype.call.bind(this);
 		}
 
-		call() {
+		call(...args) {
 			this.push(this.state);
 	
-			for (let i = 0; i < arguments.length; i++) {
+			for (let i = 0; i < args.length; i++) {
 				try {
-					pushVar(this.state, arguments[i])
+					pushVar(this.state, args[i])
 				} catch (e) {
 					for (; i >= 0; i--) {
 						luaNative.js_drop(this.state, 1);
@@ -325,7 +331,7 @@
 				}
 			}
 	
-			const stack = luaNative.jslua_call(this.state, arguments.length);
+			const stack = luaNative.jslua_call(this.state, args.length);
 			const ret = decodeStack(this.state, Math.abs(stack));
 			if (stack < 0) {
 				throw new LuaError(ret[0]);

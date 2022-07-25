@@ -24,7 +24,7 @@ typedef struct TypedPointerData {
 	int ptr;
 } TypedPointerData;
 
-extern char* luaCallFunctionPointer(int funcPtr, lua_State *L, int stack_size, boolean convertArgs);
+extern char* luaCallFunctionPointer(int funcPtr, lua_State *L, int stack_size, boolean convertArgs, boolean call_with_new);
 extern char* luaRemoveVarPtr(int varPtr);
 
 #define _DEFINITIONS_H_INCLUDED
