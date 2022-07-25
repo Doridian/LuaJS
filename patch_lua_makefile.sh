@@ -1,4 +1,4 @@
-#!/bin/sh\
+#!/bin/sh
 
 set -xe
 
@@ -6,7 +6,7 @@ sed=sed
 which gsed && sed=gsed
 
 PATCH_FILE=lua/makefile
-PATCH_FILE_TARGET=$PATCH_FILE.patched
+PATCH_FILE_TARGET=tmp/lua.makefile
 
 if [ "x$1" = "xclean" ]; then
 	rm -f "$PATCH_FILE_TARGET"

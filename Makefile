@@ -1,7 +1,7 @@
 default: all
 
 all: patch
-	cd lua && make -f makefile.patched
+	cd lua && make -f ../tmp/lua.makefile liblua.a
 	cd src && make
 
 clean:
