@@ -16,6 +16,7 @@ void luajs_jsfunction_init(lua_State *L) {
 		{"__call", luajs_jsfunction__call},
 		{"toTable", luajs_jsobject_toTable},
 		{"__is_javascript", luajs_jsvar__is_javascript},
+		{"__eq", luajs_jsvar__eq},
 		{"jstype", luajs_jsvar_jstype},
 		{NULL, NULL}
 	};

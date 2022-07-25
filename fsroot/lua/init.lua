@@ -26,6 +26,13 @@ __jsmt_addrecurse(js.__mt_js_array)
 
 local __js_Object_entries = js.global.Object.entries
 local __js_Symbol_iterator = js.global.Symbol.iterator
+local __js_Map_prototype = js.global.Map.prototype
+local __js_Object_get_prototype = js.global.Object.getPrototypeOf
+local unpack = table.unpack
+
+function js.__mt_js_object:get_prototype()
+	return __js_Object_get_prototype(nil, self)
+end
 
 function js.__mt_js_object:iterator()
 	local js_iterator = self[__js_Symbol_iterator]
@@ -57,6 +64,11 @@ function js.__mt_js_object:entries_iterator()
 end
 
 function js.__mt_js_object:__pairs()
+	local proto = self:get_prototype()
+	if proto == __js_Map_prototype then
+		return self:entries_iterator()
+	end
+
 	local it = self:iterator()
 	if it then
 		return it

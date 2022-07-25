@@ -20,6 +20,7 @@ void luajs_jsarray_init(lua_State *L) {
 		{"__ipairs", luajs_jsarray__pairs},
 		{"toTable", luajs_jsarray_toTable},
 		{"__is_javascript", luajs_jsvar__is_javascript},
+		{"__eq", luajs_jsvar__eq},
 		{"jstype", luajs_jsvar_jstype},
 		{NULL, NULL}
 	};
@@ -33,7 +34,7 @@ int luajs_jsarray__index(lua_State *L) {
 		return luajs_jsobject__index(L);
 	}
 
-	int num = lua_tonumber(L, -1);
+	int num = lua_tonumber(L, -1) - 1;
 	lua_pop(L, 1);
 
 	GET_SelfTypedPointerData();
@@ -52,7 +53,7 @@ int luajs_jsarray__newindex(lua_State *L) {
 
 	int refIdx = luaL_ref(L, LUA_REGISTRYINDEX);
 	
-	int val = lua_tonumber(L, -1);
+	int val = lua_tonumber(L, -1) - 1;
 	lua_pop(L, 1);
 	
 	GET_SelfTypedPointerData();
@@ -80,31 +81,35 @@ int luajs_jsarray__len(lua_State *L) {
 }
 
 int luajs_jsarray__next(lua_State *L) {
-	PEEK_SelfTypedPointerData(lua_upvalueindex(1));
+	PEEK_SelfTypedPointerData(-2);
 	
-	int num = lua_tonumber(L, -1);
-	
+	int num = lua_tonumber(L, -1); // Lua begins at 1, therefor we do not do math here!
+
+	lua_pushnil(L); // Push it to the stack so we can replace it later with the number
+
 	int res = EM_ASM_INT({
 		const val = LuaJS.__getVarByRef($1);
-		if($2 >= val.length) {
-			return 0;
+		if ($2 >= val.length) {
+			return -1;
 		}
 		LuaJS.__pushVar($0, val[$2]);
 		return $2 + 1;
 	}, L, data->ptr, num);
 
-	if (!res) {
+	if (res < 0) {
+		lua_pop(L, -1);
 		return 0;
 	}
 
 	lua_pushnumber(L, res);
-	lua_replace(L, -3);
+	lua_replace(L, -3); // Replace prepared nil with number
 	return 2;
 }
 
 int luajs_jsarray__pairs(lua_State *L) {
-	lua_pushcclosure(L, luajs_jsarray__next, 1);
-	return 1;
+	lua_pushcclosure(L, luajs_jsarray__next, 0);
+	lua_pushvalue(L, -2);
+	return 2;
 }
 
 int luajs_jsarray_toTable(lua_State *L) {

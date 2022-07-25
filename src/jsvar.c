@@ -15,6 +15,7 @@ void luajs_jsvar_init(lua_State *L) {
 	
 	luaL_Reg reg_unknown[] = {
 		{"__gc", luajs_jsvar__gc},
+		{"__eq", luajs_jsvar__eq},
 		{"__is_javascript", luajs_jsvar__is_javascript},
 		{"jstype", luajs_jsvar_jstype},
 		{NULL, NULL}
@@ -62,6 +63,15 @@ int luajs_jsvar__is_javascript(lua_State *L) {
 	boolean isJS = lua_isuserdata(L, -1);
 	lua_pop(L, 1);
 	lua_pushboolean(L, isJS);
+	return 1;
+}
+
+int luajs_jsvar__eq(lua_State *L) {
+	GET_SelfTypedPointerData();
+	GET_TypedPointerData(-1, other);
+
+	lua_pushboolean(L, data->ptr == other->ptr);
+
 	return 1;
 }
 
