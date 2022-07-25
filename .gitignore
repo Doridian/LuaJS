@@ -5,3 +5,5 @@
 !/src/luajs.c
 /src/*.[oa]
 /src/*.html
+/tmp/*
+!/tmp/.gitkeep
