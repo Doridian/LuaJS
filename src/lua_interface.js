@@ -18,7 +18,7 @@
 
 	let luaNative = undefined;
 
-	const lua_state_tbl = {};
+	const luaStateTable = {};
 
 	const luaTypes = {
 		nil: 0,
@@ -121,9 +121,9 @@
 		}
 	}
 
-	function decodeStack(state, stack_size, convertArgs) {
+	function decodeStack(state, stackSize, convertArgs) {
 		const ret = [];
-		for (let i = 0; i < stack_size; i++) {
+		for (let i = 0; i < stackSize; i++) {
 			ret.unshift(decodeSingle(state, -1, convertArgs));
 			luaNative.js_drop(state, 1);
 		}
@@ -161,11 +161,11 @@
 		}
 	}
 
-	function luaCallFunction(func, state, stack_size, convertArgs) {
+	function luaCallFunction(func, state, stackSize, convertArgs) {
 		let variables, funcThis;
 
-		if (stack_size > 0) {
-			variables = decodeStack(state, stack_size, convertArgs);
+		if (stackSize > 0) {
+			variables = decodeStack(state, stackSize, convertArgs);
 			funcThis = variables[0];
 			variables = variables.slice(1);
 		} else {
@@ -176,8 +176,8 @@
 		pushVar(state, func.apply(funcThis, variables));
 	}
 
-	Module.__luaCallFunctionPointer = function luaCallFunctionPointer(funcPtr, state, stack_size, convertArgs) {
-		return luaCallFunction(getVarByRef(funcPtr), state, stack_size, convertArgs);
+	Module.__luaCallFunctionPointer = function luaCallFunctionPointer(funcPtr, state, stackSize, convertArgs) {
+		return luaCallFunction(getVarByRef(funcPtr), state, stackSize, convertArgs);
 	};
 
 	function initializeCFuncs() {
@@ -244,7 +244,7 @@
 			return;
 		}
 
-		const oldRef = lua_state_tbl[state].refArray[index];
+		const oldRef = luaStateTable[state].refArray[index];
 		if (!oldRef) {
 			return;
 		}
@@ -253,7 +253,7 @@
 		}
 
 		luaNative.jslua_unref(state, index);
-		delete lua_state_tbl[state].refArray[index];
+		delete luaStateTable[state].refArray[index];
 	}
 
 	const luaRefFinalizer = new FinalizationRegistry(luaUnref);
@@ -270,11 +270,11 @@
 			};
 			this.state = state;
 	
-			const oldRef = lua_state_tbl[state].refArray[index];
+			const oldRef = luaStateTable[state].refArray[index];
 			if (oldRef) {
 				luaUnref(oldRef);
 			}
-			lua_state_tbl[state].refArray[index] = this.refObj;
+			luaStateTable[state].refArray[index] = this.refObj;
 	
 			luaRefFinalizer.register(this, this.refObj, this);
 		}
@@ -308,11 +308,7 @@
 
 	class LuaFunction  extends LuaReference {
 		getClosure() {
-			const ret = () => {
-				LuaFunction.prototype.call.apply(func, arguments);
-			};
-			ret._LuaFunction = func;
-			return ret;
+			return LuaFunction.prototype.call.bind(this);
 		}
 
 		call() {
@@ -398,7 +394,7 @@
 		constructor() {
 			this.state = luaNative.jslua_new_state();
 			this.refArray = {};
-			lua_state_tbl[this.state] = this;
+			luaStateTable[this.state] = this;
 	
 			this.run("dofile('/lua/init.lua')");
 		}
@@ -417,7 +413,7 @@
 		close() {
 			this.unrefAll();
 			luaNative.jslua_delete_state(this.state);
-			delete lua_state_tbl[this.state];
+			delete luaStateTable[this.state];
 			this.state = undefined;
 		}
 
