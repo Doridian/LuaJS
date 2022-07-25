@@ -1,9 +1,9 @@
 #!/bin/sh
 
-set -xe
+set -e
 
 sed=sed
-which gsed && sed=gsed
+which gsed >/dev/null 2>/dev/null && sed=gsed
 
 PATCH_FILE=lua/makefile
 PATCH_FILE_TARGET=tmp/lua.makefile
