@@ -41,11 +41,16 @@ function js.__mt_js_object:iterator()
 	end
 
 	local js_iterator_instance = js_iterator(self)
+	local js_iterator_done = false
 	return function()
-		local res = js_iterator_instance:next()
-		if (not res.value) and (res.done) then
+		if js_iterator_done then
 			return
 		end
+		local res = js_iterator_instance:next()
+		if not res then
+			return
+		end
+		js_iterator_done = res.done
 		return res.value
 	end
 end
