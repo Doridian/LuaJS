@@ -49,6 +49,46 @@
 		LUA_RIDX_GLOBALS: 2
 	};
 
+	let luaLastRefIdx = -1;
+	const luaPassedVars = new Map();
+	const luaPassedVarsMap = new Map();
+
+	(() => {
+		const globTbl = [_GLOBAL, 9999, -1];
+		luaPassedVars.set(-1, globTbl);
+		luaPassedVarsMap.set(_GLOBAL, globTbl);
+	})();
+
+	function getVarByRef(index) {
+		return luaPassedVars.get(index)[0];
+	}
+
+	function luaGetVarPtr(varObj) {
+		const ptr = luaPassedVarsMap.get(varObj);
+		if (ptr) {
+			ptr[1]++;
+			return ptr[2];
+		}
+
+		const idx = ++luaLastRefIdx;
+		const tbl = [varObj, 1, idx];
+		luaPassedVars.set(idx, tbl);
+		luaPassedVarsMap.set(varObj, tbl);
+		return idx;
+	}
+
+	Module.__luaRemoveVarPtr = function luaRemoveVarPtr(varPtr) {
+		const ptr = luaPassedVars.get(varPtr);
+
+		if (ptr[1] > 1) {
+			ptr[1]--;
+			return;
+		} 
+
+		luaPassedVars.delete(varPtr);
+		luaPassedVarsMap.delete(ptr[2]);
+	};
+
 	function decodeSingle(state, pos, convertArgs) {
 		switch (luaNative.lua_type(state, pos)) {
 			case luaTypes.nil:
@@ -66,7 +106,7 @@
 				}
 				return tbl;
 			case luaTypes.userdata:
-				return luaPassedVars[luaNative.jslua_popvar(state, pos)][0];
+				return getVarByRef(luaNative.jslua_popvar(state, pos));
 			case luaTypes.function:
 				const ret = new LuaFunction(state, luaNative.jslua_toref(state, pos));
 				if (convertArgs) {
@@ -89,35 +129,6 @@
 		}
 		return ret;
 	}
-
-	let luaLastRefIdx = -1;
-	const luaPassedVars = {};
-	luaPassedVars[-1] = [_GLOBAL, -1];
-
-	function luaGetVarPtr(varObj) {
-		for (const idx in luaPassedVars) {
-			const ptr = luaPassedVars[idx];
-			if (ptr[0] == varObj) {
-				if (ptr[1] > 0) {
-					ptr[1]++;
-				}
-				return idx;
-			}
-		}
-
-		luaPassedVars[++luaLastRefIdx] = [varObj, 1];
-		return luaLastRefIdx;
-	}
-
-	Module.__luaRemoveVarPtr = function luaRemoveVarPtr(varPtr) {
-		const refCounter = luaPassedVars[varPtr][1];
-
-		if (refCounter > 1) {
-			luaPassedVars[varPtr][1]--;
-		} else if (refCounter >= 0) {
-			delete luaPassedVars[varPtr];
-		}
-	};
 
 	function pushVar(state, arg, ref) {
 		if (arg === null || arg === undefined) {
@@ -150,10 +161,6 @@
 		}
 	}
 
-	function getVarByRef(index) {
-		return luaPassedVars[index][0];
-	}
-
 	function luaCallFunction(func, state, stack_size, convertArgs) {
 		let variables, funcThis;
 
@@ -170,8 +177,7 @@
 	}
 
 	Module.__luaCallFunctionPointer = function luaCallFunctionPointer(funcPtr, state, stack_size, convertArgs) {
-		const varPtr = luaPassedVars[funcPtr];
-		return luaCallFunction(varPtr[0], state, stack_size, convertArgs);
+		return luaCallFunction(getVarByRef(funcPtr), state, stack_size, convertArgs);
 	};
 
 	function initializeCFuncs() {
