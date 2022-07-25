@@ -32,8 +32,7 @@ LIB_O= jsvar.o jslua_ref.o jslua_eval.o jsvar_object.o jsvar_array.o jsvar_funct
 BINARY_T=luajs.js
 BINARY_O=luajs.o
 BINARY_ARGS=-O2 -s EXPORTED_RUNTIME_METHODS="[\
-'cwrap',\
-'ccall'\
+'cwrap'\
 ]"\
 -s EXPORTED_FUNCTIONS="[\
 '_main',\
@@ -43,10 +42,11 @@ BINARY_ARGS=-O2 -s EXPORTED_RUNTIME_METHODS="[\
 '_jslua_toref',\
 '_jslua_pushref',\
 '_jslua_unref',\
-'_lua_pushnumber',\
-'_lua_pushstring',\
 '_jslua_call',\
 '_jslua_pushvar',\
+'_jslua_popvar',\
+'_lua_pushnumber',\
+'_lua_pushstring',\
 '_lua_gettable',\
 '_lua_settable',\
 '_lua_createtable',\
@@ -62,7 +62,6 @@ BINARY_ARGS=-O2 -s EXPORTED_RUNTIME_METHODS="[\
 '_lua_tonumberx',\
 '_lua_rawset',\
 '_lua_rawseti',\
-'_jslua_popvar',\
 '_lua_pushboolean'\
 ]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16 --js-library lua_library.js --pre-js lua_interface.js --preload-file "../fsroot/@/"
 
