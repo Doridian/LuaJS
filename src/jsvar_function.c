@@ -10,14 +10,17 @@ void luajs_jsfunction_init(lua_State *L) {
 	lua_newtable(L);
 	
 	luaL_Reg reg_function[] = {
-		{"__gc", luajs_jsvar__gc},
 		{"__index", luajs_jsobject__index},
 		{"__newindex", luajs_jsobject__newindex},
-		{"__call", luajs_jsfunction__call},
 		{"toTable", luajs_jsobject_toTable},
+
+		{"__call", luajs_jsfunction__call},
+
 		{"__is_javascript", luajs_jsvar__is_javascript},
+		{"__gc", luajs_jsvar__gc},
 		{"__eq", luajs_jsvar__eq},
 		{"jstype", luajs_jsvar_jstype},
+
 		{NULL, NULL}
 	};
 	luaL_setfuncs(L, reg_function, 0);

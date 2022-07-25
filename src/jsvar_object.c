@@ -9,13 +9,15 @@ void luajs_jsobject_init(lua_State *L) {
 	lua_newtable(L);
 	
 	luaL_Reg reg_object[] = {
-		{"__gc", luajs_jsvar__gc},
 		{"__index", luajs_jsobject__index},
 		{"__newindex", luajs_jsobject__newindex},
 		{"toTable", luajs_jsobject_toTable},
+
 		{"__is_javascript", luajs_jsvar__is_javascript},
+		{"__gc", luajs_jsvar__gc},
 		{"__eq", luajs_jsvar__eq},
 		{"jstype", luajs_jsvar_jstype},
+
 		{NULL, NULL}
 	};
 	luaL_setfuncs(L, reg_object, 0);
@@ -29,7 +31,6 @@ static int luajs_jsobject__index_nonstring(lua_State *L) {
 	return EM_ASM_INT({
 		const idx = LuaJS.__decodeSingle($0, -1, true);
 		const val = LuaJS.__getVarByRef($1);
-		//LuaJS.__luaNative.js_drop($0, 1);
 		LuaJS.__pushVar($0, val[idx]);
 		return 1;
 	}, L, data->ptr);
@@ -52,11 +53,11 @@ int luajs_jsobject__index(lua_State *L) {
 	lua_remove(L, 1);
 	lua_remove(L, 1);
 	
-	if(lua_isnil(L, -1)) {
-		lua_pop(L, 1);
-	} else {
+	if(!lua_isnil(L, -1)) {
 		return 1;
 	}
+
+	lua_pop(L, 1);
 
 	return EM_ASM_INT({
 		const str = UTF8ToString($2);

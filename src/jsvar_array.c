@@ -10,7 +10,6 @@ void luajs_jsarray_init(lua_State *L) {
 	lua_newtable(L);
 
 	luaL_Reg reg_array[] = {
-		{"__gc", luajs_jsvar__gc},
 		{"__index", luajs_jsarray__index},
 		{"__newindex", luajs_jsarray__newindex},
 		{"__len", luajs_jsarray__len},
@@ -19,9 +18,12 @@ void luajs_jsarray_init(lua_State *L) {
 		{"__pairs", luajs_jsarray__pairs},
 		{"__ipairs", luajs_jsarray__pairs},
 		{"toTable", luajs_jsarray_toTable},
+
 		{"__is_javascript", luajs_jsvar__is_javascript},
+		{"__gc", luajs_jsvar__gc},
 		{"__eq", luajs_jsvar__eq},
 		{"jstype", luajs_jsvar_jstype},
+
 		{NULL, NULL}
 	};
 	luaL_setfuncs(L, reg_array, 0);
