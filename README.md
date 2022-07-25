@@ -41,3 +41,28 @@ When you call JS functions from Lua, the function parameters will always be auto
 You can convert JS objects/arrays to native Lua tables by using jsObject:toTable(recursive), however you can also directly index JS objects from Lua.
 
 Warning: You need to call all JS functions either like `js.global:alert("testmessage")` or `local alert = js.global.alert; alert(nil, "testmessage")`. The first argument will be used as the "this" context in JavaScript.
+
+Using Lua inline in HTML
+------------------------
+
+If you call `enableLuaScriptTags(document)`, you can specify `<script type="text/lua">` tags just like JavaScript tags with either inline scripts or a `src` attribute.
+
+Below is an example HTML document that enables Lua scripts for the entire page:
+
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="luajs.js"></script>
+        <script type="text/javascript">
+            LuaJS.addEventListener("ready", () => {
+                const L = new LuaJS.State();
+                L.enableLuaScriptTags(document);
+            });
+        </script>
+        <script type="text/lua">
+            js.global.console:log("Hello world")
+        </script>
+    </head>
+</html>
+```

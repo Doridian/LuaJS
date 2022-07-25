@@ -452,7 +452,7 @@
 			try {
 				await this.__runNode(node);
 			} catch (e) {
-				console.error("Error loading script from", node, e);
+				console.error("Error loading Lua script node", node, e);
 			}
 		}
 
@@ -495,6 +495,11 @@
 				childList: true,
 				subtree: true
 			});
+		}
+
+		async enableLuaScriptTags(doc) {
+			this.listenForScripts(doc);
+			await this.loadDocumentScripts(doc);
 		}
 	}
 
