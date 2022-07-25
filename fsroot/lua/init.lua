@@ -46,11 +46,14 @@ function js.__mt_js_object:iterator()
 		if js_iterator_done then
 			return
 		end
+
 		local res = js_iterator_instance:next()
 		if not res then
 			return
 		end
+
 		js_iterator_done = res.done
+
 		return res.value
 	end
 end
