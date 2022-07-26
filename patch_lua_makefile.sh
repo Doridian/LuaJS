@@ -25,9 +25,6 @@ s/^(CC|RANLIB|RM)=/#\0/; t
 # Replace AR assignment
 s/^AR=.*$/ARR=$(AR) rcu/; t
 
-# Remove -lm from LIBS
-s/^(LIBS=.*)-lm$/\1/; t
-
 # Remove -lreadline from MYLIBS
 s/^(MYLIBS=.*)-lreadline$/\1/; t
 
