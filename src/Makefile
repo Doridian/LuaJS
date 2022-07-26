@@ -1,7 +1,5 @@
 # Makefile for building LuaJS
 
-# == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
-
 LUA_SRC=../lua
 
 CFLAGS=-O3 -march=native -flto -I$(LUA_SRC) -Wall $(SYSCFLAGS) $(MYCFLAGS)
@@ -13,8 +11,6 @@ MKDIR=mkdir -p
 
 INSTALL=install -p -m 0644 
 INSTALL_DEST=../dist
-
-# == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
 
 LUA_A=	$(LUA_SRC)/liblua.a
 
