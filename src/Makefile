@@ -25,10 +25,7 @@ LIB_O= jsvar.o jslua_ref.o jslua_eval.o jsvar_object.o jsvar_array.o jsvar_funct
 
 BINARY_T=luajs.js
 BINARY_O=luajs.o
-BINARY_ARGS=-s EXPORTED_RUNTIME_METHODS="[\
-'cwrap'\
-]"\
--s EXPORTED_FUNCTIONS="[\
+BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
 '_main',\
 '_jslua_execute',\
 '_jslua_new_state',\
@@ -57,8 +54,9 @@ BINARY_ARGS=-s EXPORTED_RUNTIME_METHODS="[\
 '_lua_rawset',\
 '_lua_rawseti',\
 '_lua_pushboolean',\
-'_realloc'\
-]" -s WASM=1 -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16 --js-library lua_library.js --pre-js lua_interface.js --preload-file "../fsroot/@/"
+'_realloc',\
+'_free'\
+]" -s WASM=1 -s TOTAL_MEMORY=134217728 -s ALLOW_TABLE_GROWTH --js-library lua_library.js --pre-js lua_interface.js --preload-file "../fsroot/@/"
 
 BINARY_FILES=luajs.data luajs.wasm $(BINARY_T)
 

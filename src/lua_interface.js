@@ -6,11 +6,85 @@
 		_GLOBAL = global;
 	}
 
+    const primitiveTypes = new Set(["number", "boolean", ""]);
+    const convertibleArgTypes = { // $ = converted, % = argument
+        "string": ["$ = allocateUTF8(%);", "_free($);"],
+    };
+    const convertibleReturnTypes = { // return VALUE();
+        "string": ["UTF8ToString"],
+    };
+
 	function importFromC(arr) {
 		const target = {};
-		for (const value of arr) {
-			target[value[0]] = Module.cwrap(value[0], value[1], value[2]);
+
+		for (const val of arr) {
+            const name = val[0];
+            const returnType = val[1];
+            const argTypes = val[2];
+
+            const cfuncName = `_${name}`;
+            const cfunc = _GLOBAL[cfuncName];
+
+            let functionPrefix = "";
+            let functionSuffix = "";
+            let functionReturn = "";
+
+            const argNames = [];
+            const argNamesConv = [];
+
+            let i = 0;
+            let onlyPrimitives = primitiveTypes.has(returnType);
+            if (!onlyPrimitives) {
+                functionReturn = convertibleReturnTypes[returnType];
+                if (!functionReturn) {
+                    throw new Error(`No routine to convert return of type ${returnType}`);
+                }
+            }
+
+            for (const argType of argTypes) {
+                i++;
+                const argName = `${argType}_${i}`;
+                const argNameConv = `${argType}_${i}_c`;
+
+                argNames.push(argName);
+
+                if (primitiveTypes.has(argType)) {
+                    argNamesConv.push(argName);
+                    continue;
+                }
+
+                onlyPrimitives = false;
+                const conversion = convertibleArgTypes[argType];
+                if (!conversion) {
+                    throw new Error(`No routine to convert arg of type ${argType}`);
+                }
+
+                const doReplace = (str) => {
+                    return str.replaceAll("$", argNameConv).replaceAll("%", argName);
+                };
+
+                functionPrefix += doReplace(conversion[0]);
+                functionSuffix += doReplace(conversion[1]);
+                argNamesConv.push(argNameConv);
+            }
+
+            if (onlyPrimitives) {
+                target[name] = cfunc;
+                continue;
+            }
+
+            const code = `(${argNames.join(", ")}) => {
+                ${functionPrefix}
+                try {
+                    return ${functionReturn}(${cfuncName}(${argNamesConv.join(", ")}));
+                } finally {
+                    ${functionSuffix}
+                }
+            }`;
+
+            target[name] = eval(code);
 		}
+
 		return target;
 	}
 
@@ -410,7 +484,7 @@
 		}
 
 		unrefAll() {
-			for (ref of this.refArray) {
+			for (const ref of this.refArray) {
 				luaUnref(ref);
 			}
 			this.refArray = {};
