@@ -84,6 +84,3 @@ function js.__mt_js_object:__pairs()
 
 	return self:entries_iterator()
 end
-
-package.path = "/lua/modules/?.lua"
-package.cpath = "/lua/modules/?.so"
