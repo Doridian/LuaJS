@@ -22,8 +22,7 @@
             const returnType = val[1];
             const argTypes = val[2];
 
-            const cfuncName = `_${name}`;
-            const cfunc = _GLOBAL[cfuncName];
+            const cfunc = _GLOBAL[`_${name}`];
 
             let functionPrefix = "";
             let functionSuffix = "";
@@ -76,7 +75,7 @@
             const code = `(${argNames.join(", ")}) => {
                 ${functionPrefix}
                 try {
-                    return ${functionReturn}(${cfuncName}(${argNamesConv.join(", ")}));
+                    return ${functionReturn}(cfunc(${argNamesConv.join(", ")}));
                 } finally {
                     ${functionSuffix}
                 }
