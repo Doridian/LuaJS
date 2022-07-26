@@ -6,7 +6,9 @@ sed=sed
 which gsed >/dev/null 2>/dev/null && sed=gsed
 
 PATCH_FILE=lua/makefile
-PATCH_FILE_TARGET=tmp/lua.makefile
+PATCH_FILE_TARGET=tmp/lua/makefile
+
+mkdir -p tmp/lua
 
 if [ "x$1" = "xclean" ]; then
 	rm -f "$PATCH_FILE_TARGET"
