@@ -4,7 +4,7 @@
 
 LUA_SRC=../lua
 
-CFLAGS=-O3 -march=native -flto -I$(LUA_SRC) -Wall -DLUA_COMPAT_ALL $(SYSCFLAGS) $(MYCFLAGS)
+CFLAGS=-O3 -march=native -flto -I$(LUA_SRC) -Wall $(SYSCFLAGS) $(MYCFLAGS)
 LDFLAGS=-O3 -march=native -flto
 
 LIBS= $(SYSLIBS) $(MYLIBS)
