@@ -25,7 +25,7 @@ LIB_O= jsvar.o jslua_ref.o jslua_eval.o jsvar_object.o jsvar_array.o jsvar_funct
 
 BINARY_T=luajs.js
 BINARY_O=luajs.o
-BINARY_ARGS=-O2 -s EXPORTED_RUNTIME_METHODS="[\
+BINARY_ARGS=-s EXPORTED_RUNTIME_METHODS="[\
 'cwrap'\
 ]"\
 -s EXPORTED_FUNCTIONS="[\
@@ -58,7 +58,7 @@ BINARY_ARGS=-O2 -s EXPORTED_RUNTIME_METHODS="[\
 '_lua_rawseti',\
 '_lua_pushboolean',\
 '_realloc'\
-]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16 --js-library lua_library.js --pre-js lua_interface.js --preload-file "../fsroot/@/"
+]" -s WASM=1 -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16 --js-library lua_library.js --pre-js lua_interface.js --preload-file "../fsroot/@/"
 
 BINARY_FILES=luajs.data luajs.wasm $(BINARY_T)
 
@@ -73,7 +73,7 @@ all:	$(ALL_T)
 o:	$(ALL_O)
 
 $(BINARY_T): $(LUA_A) lua_interface.js $(ALL_O)
-	$(CC) -s WASM=1 -o $@ $(LDFLAGS) $(LIB_O) $(BINARY_O) $(LUA_A) $(LIBS) $(BINARY_ARGS)
+	$(CC)  -o $@ $(LDFLAGS) $(LIB_O) $(BINARY_O) $(LUA_A) $(LIBS) $(BINARY_ARGS)
 
 clean:
 	$(RM) $(ALL_T) $(ALL_O) $(BINARY_FILES)
