@@ -23,7 +23,7 @@ s/\$\(AR\)/$(ARR)/g; t
 s/^(CC|RANLIB|RM)=/#\0/; t
 
 # Replace AR assignment
-s/^AR=.*$/ARR=$(AR) rcu/; t
+s/^AR= *ar/ARR=$(AR)/; t
 
 # Remove -lreadline from MYLIBS
 s/^(MYLIBS=.*)-lreadline$/\1/; t
