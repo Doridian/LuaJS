@@ -9,9 +9,6 @@ LDFLAGS=-O3 -march=native -flto
 
 LIBS= $(SYSLIBS) $(MYLIBS)
 
-AR_ARGS=rcu
-
-
 MKDIR=mkdir -p
 
 INSTALL=install -p -m 0644 
