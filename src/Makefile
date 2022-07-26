@@ -4,19 +4,13 @@
 
 LUA_SRC=../lua
 
-CFLAGS= -O2 -I$(LUA_SRC) -Wall -DLUA_COMPAT_ALL $(SYSCFLAGS) $(MYCFLAGS)
+CFLAGS=-O2 -flto -I$(LUA_SRC) -Wall -DLUA_COMPAT_ALL $(SYSCFLAGS) $(MYCFLAGS)
+LDFLAGS=-flto
+
 LIBS= $(SYSLIBS) $(MYLIBS)
 
 AR_ARGS=rcu
 
-SYSCFLAGS=
-SYSLDFLAGS=
-SYSLIBS=
-
-MYCFLAGS=
-MYLDFLAGS=
-MYLIBS=
-MYOBJS=
 
 MKDIR=mkdir -p
 
@@ -62,7 +56,8 @@ BINARY_ARGS=-O2 -s EXPORTED_RUNTIME_METHODS="[\
 '_lua_tonumberx',\
 '_lua_rawset',\
 '_lua_rawseti',\
-'_lua_pushboolean'\
+'_lua_pushboolean',\
+'_realloc'\
 ]" -s TOTAL_MEMORY=134217728 -s RESERVED_FUNCTION_POINTERS=16 --js-library lua_library.js --pre-js lua_interface.js --preload-file "../fsroot/@/"
 
 BINARY_FILES=luajs.data luajs.wasm $(BINARY_T)
@@ -89,12 +84,3 @@ depend:
 install: $(BINARY_T)
 	$(MKDIR) $(INSTALL_DEST)
 	$(INSTALL) $(BINARY_FILES) $(INSTALL_DEST)
-
-echo:
-	@echo "CC= $(CC)"
-	@echo "CFLAGS= $(CFLAGS)"
-	@echo "LDFLAGS= $(SYSLDFLAGS)"
-	@echo "LIBS= $(LIBS)"
-	@echo "AR= $(AR)"
-	@echo "RANLIB= $(RANLIB)"
-	@echo "RM= $(RM)"

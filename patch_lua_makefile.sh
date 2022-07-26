@@ -31,8 +31,11 @@ s/^(LIBS=.*)-lm$/\1/; t
 # Remove -lreadline from MYLIBS
 s/^(MYLIBS=.*)-lreadline$/\1/; t
 
-# Remove -DLUA_USE_READLINE from MYCFLAGS
-s/^(MYCFLAGS=.*)-DLUA_USE_READLINE$/\1/; t
+# Remove -DLUA_USE_READLINE from MYCFLAGS, add -flto
+s/^(MYCFLAGS=.*)-DLUA_USE_READLINE$/\1 -flto/; t
+
+# Add -flto to MYLDFLAGS
+s/^(MYLDFLAGS=.*)$/\1 -flto/; t
 
 # Remove CWARNGCC from CWARNS
 s/^(CWARNS=.*)\$\(CWARNGCC\)$/\1/; t
