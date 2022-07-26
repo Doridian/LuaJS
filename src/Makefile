@@ -19,7 +19,6 @@ LIB_O= jsvar.o jslua_ref.o jslua_eval.o jsvar_object.o jsvar_array.o jsvar_funct
 BINARY_T=luajs.js
 BINARY_O=luajs.o
 BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
-'_main',\
 '_jslua_execute',\
 '_jslua_new_state',\
 '_jslua_delete_state',\
@@ -47,6 +46,7 @@ BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
 '_lua_rawset',\
 '_lua_rawseti',\
 '_lua_pushboolean',\
+'_main',\
 '_realloc',\
 '_free'\
 ]" -s WASM=1 -s TOTAL_MEMORY=134217728 -s ALLOW_TABLE_GROWTH --js-library lua_library.js --pre-js lua_interface.js --preload-file "../fsroot/@/"
