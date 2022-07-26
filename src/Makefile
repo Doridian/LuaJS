@@ -78,9 +78,6 @@ $(BINARY_T): $(LUA_A) lua_interface.js $(ALL_O)
 clean:
 	$(RM) $(ALL_T) $(ALL_O) $(BINARY_FILES)
 
-depend:
-	@$(CC) $(CFLAGS) -MM l*.c
-
 install: $(BINARY_T)
 	$(MKDIR) $(INSTALL_DEST)
 	$(INSTALL) $(BINARY_FILES) $(INSTALL_DEST)
