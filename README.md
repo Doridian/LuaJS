@@ -23,7 +23,7 @@ LuaJS.addEventListener("ready", () => {
     console.log(value[0].toObject(true, true)); //converts LuaJS.Table to JavaScript object (will drop all other LuaJS.Reference-s if unrefAll == true)
     value[0].unref();
 
-    var func = L.run("return function(a,b) return a + b end"); //func[0] instanceof LuaJS.Function, func[0] instanceof LuaJS.Reference
+    let func = L.run("return function(a,b) return a + b end"); //func[0] instanceof LuaJS.Function, func[0] instanceof LuaJS.Reference
     value = func[0].call(3,4); //value == [7]
     console.log(value);
     func[0].unref();
