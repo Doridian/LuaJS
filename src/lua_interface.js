@@ -303,8 +303,8 @@
 			return ref;
 		};
 
-		luaNative.js_tostring = function js_tostring(a, b) {
-			return luaNative.lua_tolstring(a, b, 0);
+		luaNative.js_tostring = function js_tostring(state, i) {
+			return luaNative.lua_tolstring(state, i, 0);
 		};
 
 		luaNative.js_tonumber = function js_tonumber(state, i) {
