@@ -4,8 +4,9 @@ all: patch
 	cd lua && make -f ../tmp/lua/makefile liblua.a
 	cd src && make
 
-clean: patch
-	cd lua && make -f ../tmp/lua/makefile clean
+clean:
+	rm -rf ./tmp
+	cd lua && make clean
 	cd src && make clean
 	sh -e ./patch_lua_makefile.sh clean
 
