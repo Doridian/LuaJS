@@ -61,7 +61,7 @@ int jslua_popvar(lua_State *L, int pos) {
 }
 
 int luajs_jsvar__is_javascript(lua_State *L) {
-  boolean isJS = lua_isuserdata(L, -1);
+  int isJS = lua_isuserdata(L, -1);
   lua_pop(L, 1);
   lua_pushboolean(L, isJS);
   return 1;

@@ -27,7 +27,7 @@ void luajs_jsfunction_init(lua_State *L) {
   lua_rawset(L, -3);
 }
 
-static int luajs_jsfunction__call_int(lua_State *L, boolean call_with_new) {
+static int luajs_jsfunction__call_int(lua_State *L, int call_with_new) {
   GET_SelfTypedPointerData();
 
   if (data->type != TYPE_JSFUNCTION) {
@@ -36,14 +36,14 @@ static int luajs_jsfunction__call_int(lua_State *L, boolean call_with_new) {
     return 1;
   }
 
-  luaCallFunctionPointer(data->ptr, L, lua_gettop(L), TRUE, call_with_new);
+  luaCallFunctionPointer(data->ptr, L, lua_gettop(L), 1, call_with_new);
   return 1;
 }
 
 int luajs_jsfunction__call(lua_State *L) {
-  return luajs_jsfunction__call_int(L, FALSE);
+  return luajs_jsfunction__call_int(L, 0);
 }
 
 int luajs_jsfunction_new(lua_State *L) {
-  return luajs_jsfunction__call_int(L, TRUE);
+  return luajs_jsfunction__call_int(L, 1);
 }

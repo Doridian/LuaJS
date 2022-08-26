@@ -10,10 +10,6 @@
 
 #include <emscripten.h>
 
-typedef int boolean;
-#define TRUE 1
-#define FALSE 0
-
 #define TYPE_JSUNKNOWN 0
 #define TYPE_JSFUNCTION 1
 #define TYPE_JSARRAY 2
@@ -25,7 +21,7 @@ typedef struct TypedPointerData {
 } TypedPointerData;
 
 extern char *luaCallFunctionPointer(int funcPtr, lua_State *L, int stack_size,
-                                    boolean convertArgs, boolean call_with_new);
+                                    int convertArgs, int call_with_new);
 extern char *luaRemoveVarPtr(int varPtr);
 
 #define _DEFINITIONS_H_INCLUDED
