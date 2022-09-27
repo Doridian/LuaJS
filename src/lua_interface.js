@@ -72,16 +72,16 @@
                 continue;
             }
 
-            const code = `(${argNames.join(", ")}) => {
+            const cfuncWrapped = new Function(...argNames, `
                 ${functionPrefix}
                 try {
-                    return ${functionReturn}(cfunc(${argNamesConv.join(", ")}));
+                    return ${functionReturn}(this(${argNamesConv.join(", ")}));
                 } finally {
                     ${functionSuffix}
                 }
-            }`;
+            `).bind(cfunc);
 
-            target[name] = eval(code);
+            target[name] = cfuncWrapped;
 		}
 
 		return target;
