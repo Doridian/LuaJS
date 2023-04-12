@@ -9,10 +9,10 @@ LIBS= $(SYSLIBS) $(MYLIBS)
 
 MKDIR=mkdir -p
 
-INSTALL=install -p -m 0644 
+INSTALL=install -p -m 0644
 INSTALL_DEST=../dist
 
-LUA_A=	$(LUA_SRC)/liblua.a
+LUA_A= $(LUA_SRC)/liblua.a
 
 LIB_O= jsvar.o jslua_ref.o jslua_eval.o jsvar_object.o jsvar_array.o jsvar_function.o
 
@@ -59,16 +59,16 @@ ALL_T= $(BINARY_T)
 # Targets start here.
 default: all
 
-all:	$(ALL_T)
+all: $(ALL_T)
 
-o:	$(ALL_O)
+o: $(ALL_O)
 
 $(BINARY_T): $(LUA_A) lua_interface.js $(ALL_O)
-	$(CC)  -o $@ $(LDFLAGS) $(LIB_O) $(BINARY_O) $(LUA_A) $(LIBS) $(BINARY_ARGS)
+    $(CC)  -o $@ $(LDFLAGS) $(LIB_O) $(BINARY_O) $(LUA_A) $(LIBS) $(BINARY_ARGS)
 
 clean:
-	$(RM) $(ALL_T) $(ALL_O) $(BINARY_FILES)
+    $(RM) $(ALL_T) $(ALL_O) $(BINARY_FILES)
 
 install: $(BINARY_T)
-	$(MKDIR) $(INSTALL_DEST)
-	$(INSTALL) $(BINARY_FILES) $(INSTALL_DEST)
+    $(MKDIR) $(INSTALL_DEST)
+    $(INSTALL) $(BINARY_FILES) $(INSTALL_DEST)

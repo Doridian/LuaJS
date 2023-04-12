@@ -11,8 +11,8 @@ PATCH_FILE_TARGET=tmp/lua/makefile
 mkdir -p tmp/lua
 
 if [ "x$1" = "xclean" ]; then
-	rm -f "$PATCH_FILE_TARGET"
-	exit 0
+    rm -f "$PATCH_FILE_TARGET"
+    exit 0
 fi
 
 $sed -r '
