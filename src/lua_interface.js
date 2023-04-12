@@ -7,12 +7,27 @@
 	}
 
     const primitiveTypes = new Set(["number", "boolean", ""]);
-    const convertibleArgTypes = { // $ = converted, % = argument
-        "string": ["$ = allocateUTF8(%);", "_free($);"],
-    };
-    const convertibleReturnTypes = { // return VALUE();
-        "string": ["UTF8ToString"],
-    };
+
+	const specialCFuncs = {
+		['PRIMITIVE;PRIMITIVE,string']: (func, prim, strJS, ...args) => {
+			const strC = allocateUTF8(strJS);
+			try {
+				return func(prim, strC, ...args);
+			} finally {
+				_free(strC);
+			}
+		},
+		['string;']: (func, ...args) => {
+			return UTF8ToString(func(...args));
+		},
+	};
+
+	function _formatCType(typ) {
+		if (primitiveTypes.has(typ)) {
+			return 'PRIMITIVE';
+		}
+		return typ;
+	}
 
 	function importFromC(arr) {
 		const target = {};
@@ -24,47 +39,18 @@
 
             const cfunc = _GLOBAL[`_${name}`];
 
-            let functionPrefix = "";
-            let functionSuffix = "";
-            let functionReturn = "";
-
-            const argNames = [];
-            const argNamesConv = [];
-
-            let i = 0;
             let onlyPrimitives = primitiveTypes.has(returnType);
-            if (!onlyPrimitives) {
-                functionReturn = convertibleReturnTypes[returnType];
-                if (!functionReturn) {
-                    throw new Error(`No routine to convert return of type ${returnType}`);
-                }
-            }
+			let lastNonPrimitive = -1;
 
+			let i = -1;
             for (const argType of argTypes) {
-                i++;
-                const argName = `${argType}_${i}`;
-                const argNameConv = `${argType}_${i}_c`;
-
-                argNames.push(argName);
-
+				i++;
                 if (primitiveTypes.has(argType)) {
-                    argNamesConv.push(argName);
                     continue;
                 }
 
                 onlyPrimitives = false;
-                const conversion = convertibleArgTypes[argType];
-                if (!conversion) {
-                    throw new Error(`No routine to convert arg of type ${argType}`);
-                }
-
-                const doReplace = (str) => {
-                    return str.replaceAll("$", argNameConv).replaceAll("%", argName);
-                };
-
-                functionPrefix += doReplace(conversion[0]);
-                functionSuffix += doReplace(conversion[1]);
-                argNamesConv.push(argNameConv);
+				lastNonPrimitive = i;
             }
 
             if (onlyPrimitives) {
@@ -72,16 +58,12 @@
                 continue;
             }
 
-            const cfuncWrapped = new Function(...argNames, `
-                ${functionPrefix}
-                try {
-                    return ${functionReturn}(this(${argNamesConv.join(", ")}));
-                } finally {
-                    ${functionSuffix}
-                }
-            `).bind(cfunc);
-
-            target[name] = cfuncWrapped;
+			const searchString = `${_formatCType(returnType)};${argTypes.slice(0, lastNonPrimitive + 1).map(_formatCType).join(',')}`;
+			const cfuncWrapped = specialCFuncs[searchString];
+			if (!cfuncWrapped) {
+				throw new Error(`Unknown complex type C handler for ${searchString}`);
+			}
+            target[name] = cfuncWrapped.bind(undefined, cfunc);
 		}
 
 		return target;
