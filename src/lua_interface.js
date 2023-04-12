@@ -297,7 +297,7 @@
     }
 
     function luaUnref(objectRef) {
-        const index =  objectRef.index;
+        const index = objectRef.index;
         const state = objectRef.state;
         objectRef.state = undefined;
         objectRef.index = undefined;
