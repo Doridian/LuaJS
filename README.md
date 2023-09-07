@@ -21,7 +21,7 @@ Usage of Lua from JavaScript
 ----------------------------
 
 ```javascript
-Module.addEventListener("ready", () => {
+Module.ready.then(() => {
     const L = new Module.State();
     let value;
     value = L.run("return 1+2"); //value == [3]
@@ -64,7 +64,7 @@ Below is an example HTML document that enables Lua scripts for the entire page:
     <head>
         <script type="text/javascript" src="luajs.js"></script>
         <script type="text/javascript">
-            Module.addEventListener("ready", () => {
+            Module.ready.then(() => {
                 const L = new Module.State();
                 L.enableLuaScriptTags(document);
             });
@@ -83,7 +83,7 @@ The compiled module can be used in NodeJS as follows:
 
 ```js
 const LuaJS = require('./luajs.js');
-LuaJS.addEventListener('ready', () => {
+Module.ready.then(() => {
     const L = new LuaJS.State();
     console.log(L.run("return 42 + 69"));
 });

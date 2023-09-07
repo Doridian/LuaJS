@@ -69,7 +69,10 @@
         return target;
     }
 
-    const eventEmitter = new EventTarget();
+    let readyResolve = undefined;
+    const readyPromise = new Promise((resolve) => {
+        readyResolve = resolve;
+    });
 
     let luaNative = undefined;
 
@@ -293,7 +296,7 @@
             return luaNative.lua_tonumberx(state, i, 0);
         };
 
-        eventEmitter.dispatchEvent(new Event("ready"));
+        readyResolve();
     }
 
     function luaUnref(objectRef) {
@@ -564,9 +567,7 @@
     Module.Function = LuaFunction;
     Module.Table = LuaTable;
     Module.Reference = LuaReference;
-
-    Module.addEventListener = eventEmitter.addEventListener.bind(eventEmitter);
-    Module.removeEventListener = eventEmitter.removeEventListener.bind(eventEmitter);
+    Module.ready = readyPromise;
 
     Module.__luaNative = luaNative;
     Module.__pushVar = pushVar;
