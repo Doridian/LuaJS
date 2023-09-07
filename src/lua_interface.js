@@ -1,6 +1,6 @@
 (function () {
     let _GLOBAL;
-    if (window) {
+    if (typeof window !== 'undefined') {
         _GLOBAL = window;
     } else if (global) {
         _GLOBAL = global;
