@@ -10,7 +10,7 @@
 
     const specialCFuncs = {
         ['PRIMITIVE;PRIMITIVE,string']: (func, prim, strJS, ...args) => {
-            const strC = allocateUTF8(strJS);
+            const strC = stringToNewUTF8(strJS);
             try {
                 return func(prim, strC, ...args);
             } finally {
