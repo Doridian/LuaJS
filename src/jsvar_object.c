@@ -28,9 +28,9 @@ static int luajs_jsobject__index_nonstring(lua_State *L) {
 
   EM_ASM(
       {
-        const idx = LuaJS.__decodeSingle($0, -1, true);
-        const val = LuaJS.__getVarByRef($1);
-        LuaJS.__pushVar($0, val[idx]);
+        const idx = Module.__decodeSingle($0, -1, true);
+        const val = Module.__getVarByRef($1);
+        Module.__pushVar($0, val[idx]);
       },
       L, data->ptr);
   return 1;
@@ -62,8 +62,8 @@ int luajs_jsobject__index(lua_State *L) {
   EM_ASM(
       {
         const str = UTF8ToString($2);
-        const val = LuaJS.__getVarByRef($1);
-        LuaJS.__pushVar($0, val[str]);
+        const val = Module.__getVarByRef($1);
+        Module.__pushVar($0, val[str]);
       },
       L, data->ptr, idx);
   return 1;
@@ -77,9 +77,9 @@ int luajs_jsobject__newindex(lua_State *L) {
   lua_rawgeti(L, LUA_REGISTRYINDEX, refIdx);
   EM_ASM(
       {
-        const idx = LuaJS.__decodeSingle($0, -2, true);
-        const val = LuaJS.__decodeSingle($0, -1, true);
-        LuaJS.__getVarByRef($1)[idx] = val;
+        const idx = Module.__decodeSingle($0, -2, true);
+        const val = Module.__decodeSingle($0, -1, true);
+        Module.__getVarByRef($1)[idx] = val;
       },
       L, data->ptr);
   lua_pop(L, 1);
@@ -95,16 +95,16 @@ int luajs_jsobject_toTable(lua_State *L) {
 
   EM_ASM(
       {
-        const obj = LuaJS.__getVarByRef($1);
+        const obj = Module.__getVarByRef($1);
 
         for (const idx in obj) {
           if (!obj.hasOwnProperty(idx)) {
             continue;
           }
 
-          LuaJS.__pushVar($0, idx);
-          LuaJS.__pushVar($0, obj[idx]);
-          LuaJS.__luaNative.lua_rawseti($0, -3);
+          Module.__pushVar($0, idx);
+          Module.__pushVar($0, obj[idx]);
+          Module.__luaNative.lua_rawseti($0, -3);
         }
       },
       L, data->ptr);

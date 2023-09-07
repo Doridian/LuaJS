@@ -37,8 +37,7 @@
             const returnType = val[1];
             const argTypes = val[2];
 
-            // TODO: _GLOBAL definition of cfuncs do not exist in Node
-            const cfunc = _GLOBAL[`_${name}`];
+            const cfunc = Module[`_${name}`];
 
             let onlyPrimitives = primitiveTypes.has(returnType);
             let lastNonPrimitive = -1;
@@ -274,7 +273,7 @@
             ["lua_rawset", "", ["number", "number"]],
         ]);
 
-        _GLOBAL.LuaJS.__luaNative = luaNative;
+        Module.__luaNative = luaNative;
 
         luaNative.js_drop = function js_drop(state, n) {
             luaNative.lua_settop(state, -n - 1);
@@ -561,19 +560,17 @@
         }
     }
 
-    _GLOBAL.LuaJS = {
-        State: LuaState,
-        Function: LuaFunction,
-        Table: LuaTable,
-        Reference: LuaReference,
+    Module.State = LuaState;
+    Module.Function = LuaFunction;
+    Module.Table = LuaTable;
+    Module.Reference = LuaReference;
 
-        addEventListener: eventEmitter.addEventListener.bind(eventEmitter),
-        removeEventListener: eventEmitter.removeEventListener.bind(eventEmitter),
+    Module.addEventListener = eventEmitter.addEventListener.bind(eventEmitter);
+    Module.removeEventListener = eventEmitter.removeEventListener.bind(eventEmitter);
 
-        __luaNative: luaNative,
-        __pushVar: pushVar,
-        __getVarByRef: getVarByRef,
-        __decodeSingle: decodeSingle,
-        __onready: initializeCFuncs,
-    };
+    Module.__luaNative = luaNative;
+    Module.__pushVar = pushVar;
+    Module.__getVarByRef = getVarByRef;
+    Module.__decodeSingle = decodeSingle;
+    Module.__onready = initializeCFuncs;
 })();

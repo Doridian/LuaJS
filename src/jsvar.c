@@ -86,8 +86,8 @@ int luajs_jsvar_jstype(lua_State *L) {
   GET_SelfTypedPointerData();
   EM_ASM(
       {
-        const val = LuaJS.__getVarByRef($1);
-        LuaJS.__pushVar($0, typeof val);
+        const val = Module.__getVarByRef($1);
+        Module.__pushVar($0, typeof val);
       },
       L, data->ptr);
   return 1;

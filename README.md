@@ -15,24 +15,24 @@ You'll need emscripten installed. If you're running a system that supports homeb
 Build instructions
 ------------------
 
-Run `emmake make && emmake make install` then you have the compiled files in the dist folder.
+Run `emmake make clean && emmake make install` then you have the compiled files in the dist folder.
 
 Usage of Lua from JavaScript
 ----------------------------
 
 ```javascript
-LuaJS.addEventListener("ready", () => {
-    const L = new LuaJS.State();
+Module.addEventListener("ready", () => {
+    const L = new Module.State();
     let value;
     value = L.run("return 1+2"); //value == [3]
 
-    value = L.run("return {a = 1, b = 2}"); //value[0] instanceof LuaJS.Table, value[0] instanceof LuaJS.Reference
+    value = L.run("return {a = 1, b = 2}"); //value[0] instanceof Module.Table, value[0] instanceof Module.Reference
     value[0].get("a"); // == 1
     console.log(value);
-    console.log(value[0].toObject(true, true)); //converts LuaJS.Table to JavaScript object (will drop all other LuaJS.Reference-s if unrefAll == true)
+    console.log(value[0].toObject(true, true)); //converts Module.Table to JavaScript object (will drop all other Module.Reference-s if unrefAll == true)
     value[0].unref();
 
-    let func = L.run("return function(a,b) return a + b end"); //func[0] instanceof LuaJS.Function, func[0] instanceof LuaJS.Reference
+    let func = L.run("return function(a,b) return a + b end"); //func[0] instanceof Module.Function, func[0] instanceof Module.Reference
     value = func[0].call(3,4); //value == [7]
     console.log(value);
     func[0].unref();
@@ -64,8 +64,8 @@ Below is an example HTML document that enables Lua scripts for the entire page:
     <head>
         <script type="text/javascript" src="luajs.js"></script>
         <script type="text/javascript">
-            LuaJS.addEventListener("ready", () => {
-                const L = new LuaJS.State();
+            Module.addEventListener("ready", () => {
+                const L = new Module.State();
                 L.enableLuaScriptTags(document);
             });
         </script>
