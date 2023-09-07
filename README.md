@@ -3,6 +3,15 @@ LuaJS
 
 Lua VM running in Javascript (using emscripten)
 
+Setup Instructions
+------------------
+
+Make certain to download your git submodules, run `git submodule init` then `git submodule update`.
+
+You'll need emscripten installed. If you're running a system that supports homebrew, you can brew install:
+* [Installing Homebrew](https://docs.brew.sh/Installation)
+* Install Emscripten: `brew install emscripten`
+
 Build instructions
 ------------------
 
