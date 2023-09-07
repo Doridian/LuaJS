@@ -37,6 +37,7 @@
             const returnType = val[1];
             const argTypes = val[2];
 
+            // TODO: _GLOBAL definition of cfuncs do not exist in Node
             const cfunc = _GLOBAL[`_${name}`];
 
             let onlyPrimitives = primitiveTypes.has(returnType);
