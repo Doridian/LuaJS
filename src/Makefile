@@ -64,11 +64,11 @@ all: $(ALL_T)
 o: $(ALL_O)
 
 $(BINARY_T): $(LUA_A) lua_interface.js $(ALL_O)
-    $(CC)  -o $@ $(LDFLAGS) $(LIB_O) $(BINARY_O) $(LUA_A) $(LIBS) $(BINARY_ARGS)
+	$(CC)  -o $@ $(LDFLAGS) $(LIB_O) $(BINARY_O) $(LUA_A) $(LIBS) $(BINARY_ARGS)
 
 clean:
-    $(RM) $(ALL_T) $(ALL_O) $(BINARY_FILES)
+	$(RM) $(ALL_T) $(ALL_O) $(BINARY_FILES)
 
 install: $(BINARY_T)
-    $(MKDIR) $(INSTALL_DEST)
-    $(INSTALL) $(BINARY_FILES) $(INSTALL_DEST)
+	$(MKDIR) $(INSTALL_DEST)
+	$(INSTALL) $(BINARY_FILES) $(INSTALL_DEST)
