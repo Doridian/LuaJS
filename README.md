@@ -75,3 +75,16 @@ Below is an example HTML document that enables Lua scripts for the entire page:
     </head>
 </html>
 ```
+
+Using Lua in NodeJS
+-------------------
+
+The compiled module can be used in NodeJS as follows:
+
+```js
+const LuaJS = require('./luajs.js');
+LuaJS.addEventListener('ready', () => {
+    const L = new LuaJS.State();
+    console.log(L.run("return 42 + 69"));
+});
+```
