@@ -6,7 +6,7 @@ Lua VM running in Javascript (using emscripten)
 Setup Instructions
 ------------------
 
-Make certain to download your git submodules, run `git submodule init` then `git submodule update`.
+Make certain to download your git submodules, run `git submodule init` then `git submodule update`. Or use make to do both: `make getlua`.
 
 You'll need emscripten installed. If you're running a system that supports homebrew, you can brew install:
 * [Installing Homebrew](https://docs.brew.sh/Installation)
@@ -14,6 +14,8 @@ You'll need emscripten installed. If you're running a system that supports homeb
 
 Build instructions
 ------------------
+
+After downloading Lua above using the git submodule magic, you'll need to patch their makefile. Run: `make patch` to do that.
 
 Run `emmake make && emmake make install` then you have the compiled files in the dist folder.
 
