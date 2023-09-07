@@ -83,7 +83,7 @@ The compiled module can be used in NodeJS as follows:
 
 ```js
 const LuaJS = require('./luajs.js');
-Module.ready.then(() => {
+LuaJS.ready.then(() => {
     const L = new LuaJS.State();
     console.log(L.run("return 42 + 69"));
 });
