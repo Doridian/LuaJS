@@ -31,6 +31,9 @@ s/^(MYLIBS=.*)-lreadline$/\1/; t
 # Remove -DLUA_USE_READLINE from MYCFLAGS, add -flto
 s~^(MYCFLAGS=.*)-DLUA_USE_LINUX -DLUA_USE_READLINE$~\1 -flto -DLUA_CPATH_DEFAULT="\\"/lua/modules/?.so\\"" -DLUA_PATH_DEFAULT="\\"/lua/modules/?.lua;/lua/modules/?/init.lua\\""~; t
 
+# Remove -march=native
+s~-march=native~~g; t
+
 # Replace O2 with O3
 s/-O2/-O3/g; t
 
