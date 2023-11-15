@@ -17,7 +17,6 @@
             }
             try {
                 stringToUTF8(strJS, strC, strLen + 1);
-                console.log(func, strJS, strC, strLen);
                 return func(prim, strC, strLen, ...args);
             } finally {
                 _free(strC);
