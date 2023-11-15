@@ -9,17 +9,20 @@
     const primitiveTypes = new Set(["number", "boolean", ""]);
 
     const specialCFuncs = {
-        ['PRIMITIVE;PRIMITIVE,string']: (func, prim, strJS, ...args) => {
-            const strC = stringToNewUTF8(strJS);
+        ['PRIMITIVE;PRIMITIVE,lstring']: (func, prim, strJS, ...args) => {
+            const strLen = lengthBytesUTF8(strJS);
+            const strC = _malloc(strLen + 1);
+            if (!strC) {
+                throw new Error('Out of memory');
+            }
             try {
-                return func(prim, strC, ...args);
+                stringToUTF8(strJS, strC, strLen + 1);
+                console.log(func, strJS, strC, strLen);
+                return func(prim, strC, strLen, ...args);
             } finally {
                 _free(strC);
             }
-        },
-        ['string;']: (func, ...args) => {
-            return UTF8ToString(func(...args));
-        },
+        }
     };
 
     function _formatCType(typ) {
@@ -38,6 +41,9 @@
             const argTypes = val[2];
 
             const cfunc = Module[`_${name}`];
+            if (!cfunc) {
+                throw new Error(`Unknown C function ${name}`);
+            }
 
             let onlyPrimitives = primitiveTypes.has(returnType);
             let lastNonPrimitive = -1;
@@ -202,7 +208,7 @@
                 luaNative.lua_pushnumber(state, arg);
                 break;
             case "string":
-                luaNative.lua_pushstring(state, arg);
+                luaNative.lua_pushlstring(state, arg);
                 break;
             case "function":
                 luaNative.jslua_pushvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.function);
@@ -246,35 +252,41 @@
 
     function initializeCFuncs() {
         luaNative = importFromC([
-            ["jslua_execute", "number", ["number", "string"]],
             ["jslua_call", "number", ["number", "number"]],
-            ["jslua_new_state", "number", []],
             ["jslua_delete_state", "", ["number"]],
-            ["jslua_pushvar", "", ["number", "number", "number"]],
+            ["jslua_execute", "number", ["number", "lstring"]],
+            ["jslua_new_state", "number", []],
             ["jslua_popvar", "", ["number", "number"]],
-            ["jslua_toref", "number", ["number", "number"]],
             ["jslua_pushref", "", ["number", "number"]],
+            ["jslua_pushvar", "", ["number", "number", "number"]],
+            ["jslua_toref", "number", ["number", "number"]],
             ["jslua_unref", "", ["number", "number"]],
 
-            ["lua_settop", "", ["number", "number"]],
-            ["lua_gettop", "number", ["number"]],
-            ["lua_type", "number", ["number", "number"]],
-            ["lua_pushstring", "", ["number", "string"]],
-            ["lua_pushnumber", "", ["number", "number"]],
-            ["lua_pushboolean", "", ["number", "boolean"]],
-            ["lua_gettable", "", ["number", "number"]],
-            ["lua_settable", "", ["number", "number"]],
             ["lua_createtable", "", ["number"]],
-            ["lua_pushvalue", "", ["number", "number"]],
-            ["lua_pushnil", "", ["number"]],
-            ["lua_next", "", ["number", "number"]],
-            ["lua_tolstring", "string", ["number", "number", "number"]],
-            ["lua_tonumberx", "number", ["number", "number", "number"]],
             ["lua_getmetatable", "number", ["number", "number"]],
-            ["lua_setmetatable", "number", ["number", "number"]],
-            ["lua_rawseti", "", ["number", "number"]],
+            ["lua_gettable", "", ["number", "number"]],
+            ["lua_gettop", "number", ["number"]],
+            ["lua_next", "", ["number", "number"]],
+            ["lua_pushboolean", "", ["number", "boolean"]],
+            ["lua_pushlstring", "", ["number", "lstring"]],
+            ["lua_pushnil", "", ["number"]],
+            ["lua_pushnumber", "", ["number", "number"]],
+            ["lua_pushvalue", "", ["number", "number"]],
             ["lua_rawset", "", ["number", "number"]],
+            ["lua_rawseti", "", ["number", "number"]],
+            ["lua_setmetatable", "number", ["number", "number"]],
+            ["lua_settable", "", ["number", "number"]],
+            ["lua_settop", "", ["number", "number"]],
+            ["lua_tolstring", "number", ["number", "number", "number"]],
+            ["lua_tonumberx", "number", ["number", "number", "number"]],
+            ["lua_type", "number", ["number", "number"]],
         ]);
+
+        const INT_SIZE = Module._jslua_init_sizeof_int();
+        const SIZE_T_SIZE = Module._jslua_init_sizeof_size_t();
+        const size_mapper = (numval, prefix) => `${prefix}${numval * 8}`;
+        const INT_GETVALUE_TYPE = size_mapper(INT_SIZE, 'i');
+        const SIZE_T_GETVALUE_TYPE = size_mapper(SIZE_T_SIZE, 'i'); // should change to "u", but not supported
 
         Module.__luaNative = luaNative;
 
@@ -289,11 +301,20 @@
         };
 
         luaNative.js_tostring = function js_tostring(state, i) {
-            return luaNative.lua_tolstring(state, i, 0);
+            const len = stackAlloc(SIZE_T_SIZE);
+            const strC = luaNative.lua_tolstring(state, i, len);
+            const strLen = getValue(len, SIZE_T_GETVALUE_TYPE);
+            return UTF8ToString(strC, strLen);
         };
 
         luaNative.js_tonumber = function js_tonumber(state, i) {
-            return luaNative.lua_tonumberx(state, i, 0);
+            const isNumberC = stackAlloc(INT_SIZE);
+            const num = luaNative.lua_tonumberx(state, i, isNumberC);
+            const isNumber = getValue(isNumberC, INT_GETVALUE_TYPE);
+            if (!isNumber) {
+                throw new Error("Not a number");
+            }
+            return num;
         };
 
         readyResolve();

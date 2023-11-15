@@ -49,6 +49,9 @@ lua_State *jslua_new_state() {
 
 void jslua_delete_state(lua_State *L) { lua_close(L); }
 
+uint64_t jslua_init_sizeof_int() { return sizeof(int); }
+uint64_t jslua_init_sizeof_size_t() { return sizeof(size_t); }
+
 int main() {
   EM_ASM({
     Module.__onready();
