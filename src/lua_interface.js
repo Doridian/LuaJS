@@ -306,7 +306,6 @@
 
         luaNative.js_tostring = function js_tostring(state, i) {
             const lenC = mustMalloc(SIZE_T_SIZE);
-
             try {
                 const strC = luaNative.lua_tolstring(state, i, lenC);
                 const strLen = getValue(lenC, SIZE_T_GETVALUE_TYPE);
@@ -319,7 +318,6 @@
 
         luaNative.js_tonumber = function js_tonumber(state, i) {
             const isNumberC = mustMalloc(INT_SIZE);
-
             try {
                 const num = luaNative.lua_tonumberx(state, i, isNumberC);
                 const isNumber = getValue(isNumberC, INT_GETVALUE_TYPE);
