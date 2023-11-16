@@ -6,15 +6,20 @@
         _GLOBAL = global;
     }
 
+    function mustMalloc(size) {
+        const ptr = _malloc(size);
+        if (!ptr) {
+            throw new Error('Out of memory');
+        }
+        return ptr;
+    }
+
     const primitiveTypes = new Set(["number", "boolean", ""]);
 
     const specialCFuncs = {
         ['PRIMITIVE;PRIMITIVE,lstring']: (func, prim, strJS, ...args) => {
             const strLen = lengthBytesUTF8(strJS);
-            const strC = _malloc(strLen + 1);
-            if (!strC) {
-                throw new Error('Out of memory');
-            }
+            const strC = mustMalloc(strLen + 1);
             try {
                 stringToUTF8(strJS, strC, strLen + 1);
                 return func(prim, strC, strLen, ...args);
@@ -300,10 +305,7 @@
         };
 
         luaNative.js_tostring = function js_tostring(state, i) {
-            const lenC = _malloc(SIZE_T_SIZE);
-            if (!lenC) {
-                throw new Error('Out of memory');
-            }
+            const lenC = mustMalloc(SIZE_T_SIZE);
 
             try {
                 const strC = luaNative.lua_tolstring(state, i, lenC);
@@ -316,10 +318,7 @@
         };
 
         luaNative.js_tonumber = function js_tonumber(state, i) {
-            const isNumberC = _malloc(INT_SIZE);
-            if (!isNumberC) {
-                throw new Error('Out of memory');
-            }
+            const isNumberC = mustMalloc(INT_SIZE);
 
             try {
                 const num = luaNative.lua_tonumberx(state, i, isNumberC);
