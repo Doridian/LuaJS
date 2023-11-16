@@ -22,7 +22,6 @@ BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
 '_main',\
 '_realloc',\
 '_free',\
-'stackAlloc',\
 '_jslua_call',\
 '_jslua_delete_state',\
 '_jslua_execute',\

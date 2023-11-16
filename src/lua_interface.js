@@ -300,20 +300,37 @@
         };
 
         luaNative.js_tostring = function js_tostring(state, i) {
-            const len = stackAlloc(SIZE_T_SIZE);
-            const strC = luaNative.lua_tolstring(state, i, len);
-            const strLen = getValue(len, SIZE_T_GETVALUE_TYPE);
-            return UTF8ToString(strC, strLen);
+            const lenC = _malloc(SIZE_T_SIZE);
+            if (!lenC) {
+                throw new Error('Out of memory');
+            }
+
+            try {
+                const strC = luaNative.lua_tolstring(state, i, lenC);
+                const strLen = getValue(lenC, SIZE_T_GETVALUE_TYPE);
+                const strJS = UTF8ToString(strC, strLen);
+                return strJS;
+            } finally {
+                _free(lenC);
+            }
         };
 
         luaNative.js_tonumber = function js_tonumber(state, i) {
-            const isNumberC = stackAlloc(INT_SIZE);
-            const num = luaNative.lua_tonumberx(state, i, isNumberC);
-            const isNumber = getValue(isNumberC, INT_GETVALUE_TYPE);
-            if (!isNumber) {
-                throw new Error("Not a number");
+            const isNumberC = _malloc(INT_SIZE);
+            if (!isNumberC) {
+                throw new Error('Out of memory');
             }
-            return num;
+
+            try {
+                const num = luaNative.lua_tonumberx(state, i, isNumberC);
+                const isNumber = getValue(isNumberC, INT_GETVALUE_TYPE);
+                if (!isNumber) {
+                    throw new Error("Not a number");
+                }
+                return num;
+            } finally {
+                _free(isNumberC);
+            }
         };
 
         readyResolve();
