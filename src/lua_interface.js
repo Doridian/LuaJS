@@ -7,7 +7,7 @@
     }
 
     function mustMalloc(size) {
-        const ptr = _malloc(size);
+        const ptr = Module._malloc(size);
         if (!ptr) {
             throw new Error('Out of memory');
         }
@@ -24,7 +24,7 @@
                 stringToUTF8(strJS, strC, strLen + 1);
                 return func(prim, strC, strLen, ...args);
             } finally {
-                _free(strC);
+                Module._free(strC);
             }
         }
     };
@@ -312,7 +312,7 @@
                 const strJS = UTF8ToString(strC, strLen);
                 return strJS;
             } finally {
-                _free(lenC);
+                Module._free(lenC);
             }
         };
 
@@ -326,7 +326,7 @@
                 }
                 return num;
             } finally {
-                _free(isNumberC);
+                Module._free(isNumberC);
             }
         };
 

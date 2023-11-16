@@ -20,7 +20,7 @@ BINARY_T=luajs.js
 BINARY_O=luajs.o
 BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
 '_main',\
-'_realloc',\
+'_malloc',\
 '_free',\
 '_jslua_call',\
 '_jslua_delete_state',\
