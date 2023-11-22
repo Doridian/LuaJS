@@ -259,6 +259,7 @@
             ["jslua_call", "number", ["number", "number"]],
             ["jslua_delete_state", "", ["number"]],
             ["jslua_execute", "number", ["number", "lstring"]],
+            ["jslua_get_state_id", "number", ["number"]],
             ["jslua_new_state", "number", []],
             ["jslua_popvar", "", ["number", "number"]],
             ["jslua_pushref", "", ["number", "number"]],
@@ -336,13 +337,15 @@
     function luaUnref(objectRef) {
         const index = objectRef.index;
         const state = objectRef.state;
+        const stateID = objectRef.stateID;
         objectRef.state = undefined;
+        objectRef.stateID = undefined;
         objectRef.index = undefined;
         if (state === undefined || index === undefined) {
             return;
         }
 
-        const oldRef = luaStateTable[state].refArray[index];
+        const oldRef = luaStateTable[stateID].refArray[index];
         if (!oldRef) {
             return;
         }
@@ -351,7 +354,7 @@
         }
 
         luaNative.jslua_unref(state, index);
-        delete luaStateTable[state].refArray[index];
+        delete luaStateTable[stateID].refArray[index];
     }
 
     const luaRefFinalizer = new FinalizationRegistry(luaUnref);
@@ -362,17 +365,20 @@
 
     class LuaReference {
         constructor(state, index) {
+            const stateID = luaNative.jslua_get_state_id(state);
             this.refObj = {
                 state,
+                stateID,
                 index,
             };
             this.state = state;
+            this.stateID = stateID;
 
-            const oldRef = luaStateTable[state].refArray[index];
+            const oldRef = luaStateTable[stateID].refArray[index];
             if (oldRef) {
                 luaUnref(oldRef);
             }
-            luaStateTable[state].refArray[index] = this.refObj;
+            luaStateTable[stateID].refArray[index] = this.refObj;
 
             luaRefFinalizer.register(this, this.refObj, this);
         }
@@ -491,8 +497,9 @@
     class LuaState {
         constructor() {
             this.state = luaNative.jslua_new_state();
+            this.stateID = luaNative.jslua_get_state_id(this.state);
             this.refArray = {};
-            luaStateTable[this.state] = this;
+            luaStateTable[this.stateID] = this;
 
             this.run("dofile('/lua/init.lua')");
         }
@@ -511,7 +518,7 @@
         close() {
             this.unrefAll();
             luaNative.jslua_delete_state(this.state);
-            delete luaStateTable[this.state];
+            delete luaStateTable[this.stateID];
             this.state = undefined;
         }
 

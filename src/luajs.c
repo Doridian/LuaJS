@@ -7,6 +7,8 @@
 #include "jsvar_function.h"
 #include "jsvar_object.h"
 
+#include <lstate.h>
+
 int luajs_eval(lua_State *L) {
   const char *str = lua_tostring(L, -1);
   lua_pop(L, 1);
@@ -46,6 +48,8 @@ lua_State *jslua_new_state() {
 
   return L;
 }
+
+global_State *jslua_get_state_id(lua_State *L) { return L->l_G; }
 
 void jslua_delete_state(lua_State *L) { lua_close(L); }
 
