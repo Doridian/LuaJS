@@ -533,7 +533,6 @@
             } finally {
                 Module._free(codeC);
             }
-            console.log('X', stack);
             const ret = decodeStack(this.state, Math.abs(stack));
             if (stack < 0) {
                 throw new LuaError(ret[0]);
