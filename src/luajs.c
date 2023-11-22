@@ -1,6 +1,7 @@
 #include "definitions.h"
 
 #include "jslua_eval.h"
+#include "jslua_async.h"
 
 #include "jsvar.h"
 #include "jsvar_array.h"
@@ -25,7 +26,11 @@ lua_State *jslua_new_state() {
   // Load myself
   lua_newtable(L);
 
-  luaL_Reg reg_jsmain[] = {{"eval", luajs_eval}, {NULL, NULL}};
+  luaL_Reg reg_jsmain[] = {
+    {"eval", luajs_eval},
+    {"await", luajs_await},
+    {NULL, NULL},
+  };
   luaL_setfuncs(L, reg_jsmain, 0);
 
   luajs_jsarray_init(L);

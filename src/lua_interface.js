@@ -198,7 +198,7 @@
         return ret;
     }
 
-    function pushVar(state, arg, ref) {
+    function pushVar(state, arg) {
         if (arg === null || arg === undefined) {
             luaNative.lua_pushnil(state);
             return;
@@ -215,15 +215,15 @@
                 luaNative.lua_pushlstring(state, arg);
                 break;
             case "function":
-                luaNative.jslua_pushvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.function);
+                luaNative.jslua_pushvar(state, luaGetVarPtr(arg), luaJSDataTypes.function);
                 break;
             default:
                 if (arg instanceof LuaReference) {
                     arg.push(state);
                 } else if (arg instanceof Array) {
-                    luaNative.jslua_pushvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.array);
+                    luaNative.jslua_pushvar(state, luaGetVarPtr(arg), luaJSDataTypes.array);
                 } else {
-                    luaNative.jslua_pushvar(state, luaGetVarPtr(arg, ref), luaJSDataTypes.object);
+                    luaNative.jslua_pushvar(state, luaGetVarPtr(arg), luaJSDataTypes.object);
                 }
                 break;
         }

@@ -14,7 +14,7 @@ INSTALL_DEST=../dist
 
 LUA_A= $(LUA_SRC)/liblua.a
 
-LIB_O= jsvar.o jslua_ref.o jslua_eval.o jsvar_object.o jsvar_array.o jsvar_function.o
+LIB_O= jsvar.o jslua_async.o jslua_ref.o jslua_eval.o jsvar_object.o jsvar_array.o jsvar_function.o
 
 BINARY_T=luajs.js
 BINARY_O=luajs.o
@@ -51,8 +51,8 @@ BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
 '_lua_settop',\
 '_lua_tolstring',\
 '_lua_tonumberx',\
-'_lua_type'\
-]" -s WASM=1 -s TOTAL_MEMORY=134217728 -s ALLOW_TABLE_GROWTH --js-library lua_library.js --pre-js lua_interface.js --preload-file "../fsroot/@/"
+'_lua_type'
+]" -s WASM=1 -s TOTAL_MEMORY=134217728 -s ASYNCIFY -s ALLOW_TABLE_GROWTH --js-library lua_library.js --pre-js lua_interface.js --preload-file "../fsroot/@/"
 
 BINARY_FILES=luajs.data luajs.wasm $(BINARY_T)
 
