@@ -271,7 +271,6 @@
             ["lua_getmetatable", "number", ["number", "number"]],
             ["lua_gettable", "", ["number", "number"]],
             ["lua_gettop", "number", ["number"]],
-            ["lua_yieldk", "number", ["number", "number", "number", "number"]],
             ["lua_next", "", ["number", "number"]],
             ["lua_pushboolean", "", ["number", "boolean"]],
             ["lua_pushlstring", "", ["number", "lstring"]],
