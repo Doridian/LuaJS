@@ -43,6 +43,10 @@ lua_State *jslua_new_state() {
   jslua_pushvar(L, -1, TYPE_JSOBJECT);
   lua_rawset(L, -3);
 
+  lua_pushstring(L, "utils");
+  jslua_pushvar(L, -2, TYPE_JSOBJECT);
+  lua_rawset(L, -3);
+
   lua_pop(L, 1);
   // END: Load js.global
 
