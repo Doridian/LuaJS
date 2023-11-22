@@ -49,7 +49,7 @@ lua_State *jslua_new_state() {
   return L;
 }
 
-global_State *jslua_get_state_id(lua_State *L) { return L->l_G; }
+global_State *jslua_get_state_global(lua_State *L) { return G(L); }
 
 void jslua_delete_state(lua_State *L) { lua_close(L); }
 

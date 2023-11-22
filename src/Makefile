@@ -27,7 +27,7 @@ BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
 '_jslua_execute',\
 '_jslua_init_sizeof_int',\
 '_jslua_init_sizeof_size_t',\
-'_jslua_get_state_id',\
+'_jslua_get_state_global',\
 '_jslua_new_state',\
 '_jslua_popvar',\
 '_jslua_pushref',\

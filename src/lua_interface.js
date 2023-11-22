@@ -259,7 +259,7 @@
             ["jslua_call", "number", ["number", "number"]],
             ["jslua_delete_state", "", ["number"]],
             ["jslua_execute", "number", ["number", "lstring"]],
-            ["jslua_get_state_id", "number", ["number"]],
+            ["jslua_get_state_global", "number", ["number"]],
             ["jslua_new_state", "number", []],
             ["jslua_popvar", "", ["number", "number"]],
             ["jslua_pushref", "", ["number", "number"]],
@@ -337,15 +337,15 @@
     function luaUnref(objectRef) {
         const index = objectRef.index;
         const state = objectRef.state;
-        const stateID = objectRef.stateID;
+        const stateGlobal = objectRef.stateGlobal;
         objectRef.state = undefined;
-        objectRef.stateID = undefined;
+        objectRef.stateGlobal = undefined;
         objectRef.index = undefined;
         if (state === undefined || index === undefined) {
             return;
         }
 
-        const oldRef = luaStateTable[stateID].refArray[index];
+        const oldRef = luaStateTable[stateGlobal].refArray[index];
         if (!oldRef) {
             return;
         }
@@ -354,7 +354,7 @@
         }
 
         luaNative.jslua_unref(state, index);
-        delete luaStateTable[stateID].refArray[index];
+        delete luaStateTable[stateGlobal].refArray[index];
     }
 
     const luaRefFinalizer = new FinalizationRegistry(luaUnref);
@@ -365,20 +365,20 @@
 
     class LuaReference {
         constructor(state, index) {
-            const stateID = luaNative.jslua_get_state_id(state);
+            const stateGlobal = luaNative.jslua_get_state_global(state);
             this.refObj = {
                 state,
-                stateID,
+                stateGlobal,
                 index,
             };
             this.state = state;
-            this.stateID = stateID;
+            this.stateGlobal = stateGlobal;
 
-            const oldRef = luaStateTable[stateID].refArray[index];
+            const oldRef = luaStateTable[stateGlobal].refArray[index];
             if (oldRef) {
                 luaUnref(oldRef);
             }
-            luaStateTable[stateID].refArray[index] = this.refObj;
+            luaStateTable[stateGlobal].refArray[index] = this.refObj;
 
             luaRefFinalizer.register(this, this.refObj, this);
         }
@@ -497,9 +497,9 @@
     class LuaState {
         constructor() {
             this.state = luaNative.jslua_new_state();
-            this.stateID = luaNative.jslua_get_state_id(this.state);
+            this.stateGlobal = luaNative.jslua_get_state_global(this.state);
             this.refArray = {};
-            luaStateTable[this.stateID] = this;
+            luaStateTable[this.stateGlobal] = this;
 
             this.run("dofile('/lua/init.lua')");
         }
@@ -518,7 +518,7 @@
         close() {
             this.unrefAll();
             luaNative.jslua_delete_state(this.state);
-            delete luaStateTable[this.stateID];
+            delete luaStateTable[this.stateGlobal];
             this.state = undefined;
         }
 
