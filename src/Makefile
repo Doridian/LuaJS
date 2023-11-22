@@ -51,7 +51,7 @@ BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
 '_lua_settop',\
 '_lua_tolstring',\
 '_lua_tonumberx',\
-'_lua_type'
+'_lua_type'\
 ]" -s WASM=1 -s TOTAL_MEMORY=134217728 -s ASYNCIFY -s ALLOW_TABLE_GROWTH --js-library lua_library.js --pre-js lua_interface.js --preload-file "../fsroot/@/"
 
 BINARY_FILES=luajs.data luajs.wasm $(BINARY_T)
