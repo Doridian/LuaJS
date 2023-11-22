@@ -258,7 +258,6 @@
         luaNative = importFromC([
             ["jslua_call", "number", ["number", "number"]],
             ["jslua_delete_state", "", ["number"]],
-            ["jslua_execute", "number", ["number", "lstring"]],
             ["jslua_get_state_global", "number", ["number"]],
             ["jslua_new_state", "number", []],
             ["jslua_popvar", "", ["number", "number"]],
@@ -501,7 +500,9 @@
             this.refArray = {};
             luaStateTable[this.stateGlobal] = this;
 
-            this.run("dofile('/lua/init.lua')");
+            this.run("dofile('/lua/init.lua')").catch((e) => {
+                console.error("Error loading init.lua", e);
+            });
         }
 
         getTop() {
@@ -522,8 +523,17 @@
             this.state = undefined;
         }
 
-        run(code) {
-            const stack = luaNative.jslua_execute(this.state, code);
+        async run(code) {
+            const codeLen = lengthBytesUTF8(code);
+            const codeC = mustMalloc(codeLen + 1);
+            let stack;
+            try {
+                stringToUTF8(code, codeC, codeLen + 1);
+                stack = await Module.ccall('jslua_execute', 'number', ['number', 'number', 'number'], [this.state, codeC, codeLen], { async: true });
+            } finally {
+                Module._free(codeC);
+            }
+            console.log('X', stack);
             const ret = decodeStack(this.state, Math.abs(stack));
             if (stack < 0) {
                 throw new LuaError(ret[0]);
@@ -546,7 +556,7 @@
                 const res = await fetch(node.src);
                 code = await res.text();
             }
-            this.run(code);
+            await this.run(code);
         }
 
         async __tryRunNode(node) {
