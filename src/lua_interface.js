@@ -6,9 +6,6 @@
         _GLOBAL = global;
     }
 
-    let executingState = undefined;
-    const LJ_UTILS = {};
-
     function mustMalloc(size) {
         const ptr = Module._malloc(size);
         if (!ptr) {
@@ -128,10 +125,6 @@
         const globTbl = [_GLOBAL, 9999, -1];
         luaPassedVars.set(-1, globTbl);
         luaPassedVarsMap.set(_GLOBAL, globTbl);
-
-        const utilTbl = [LJ_UTILS, 9999, -2];
-        luaPassedVars.set(-2, utilTbl);
-        luaPassedVarsMap.set(LJ_UTILS, utilTbl);
     })();
 
     function getVarByRef(index) {
@@ -250,15 +243,11 @@
         }
 
         if (callWithNew) {
-            executingState = state;
             pushVar(state, new func(...variablesRaw));
-            executingState = undefined;
             return;
         }
 
-        executingState = state;
         pushVar(state, func.apply(funcThis, variables));
-        executingState = undefined;
     }
 
     Module.__luaCallFunctionPointer = function luaCallFunctionPointer(funcPtr, state, stackSize, convertArgs, callWithNew) {
@@ -614,22 +603,6 @@
             this.listenForScripts(doc);
             await this.loadDocumentScripts(doc);
         }
-    }
-
-    LJ_UTILS.fetch = function (url) {
-        return () => {
-            const state = executingState;
-            setTimeout(() => {
-                fetch(url).then((res) => {
-                    console.log('Ding');
-                    pushVar(state, res);
-                    luaNative.lua_yieldk(state, 1, 0, Module.jslua_yield_done);
-                }).catch((err) => {
-                    pushVar(state, err);
-                    luaNative.lua_yieldk(state, 1, 0, Module.jslua_yield_done);
-                });
-            }, 1000);
-        };
     }
 
     Module.State = LuaState;

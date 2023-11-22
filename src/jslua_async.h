@@ -1,6 +1,6 @@
 #ifndef _JSLUA_ASYNC_H_INCLUDED
 
-int jslua_yield_done(lua_State *L, int status, lua_KContext ctx);
+int luajs_await(lua_State *L);
 
 #define _JSLUA_ASYNC_H_INCLUDED
 #endif
