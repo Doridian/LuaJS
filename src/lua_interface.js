@@ -510,7 +510,7 @@
             this.refArray = {};
             luaStateTable[this.stateGlobal] = this;
 
-            this.readyPromise = this.run("dofile('/lua/init.lua')");
+            this.readyPromise = this.__run("dofile('/lua/init.lua')");
         }
 
         getTop() {
@@ -532,6 +532,11 @@
         }
 
         async run(code) {
+            await this.readyPromise;
+            return await this.__run(code);
+        }
+
+        async __run(code) {
             const codeLen = lengthBytesUTF8(code);
             const codeC = mustMalloc(codeLen + 1);
             let stack;
