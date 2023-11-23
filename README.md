@@ -21,17 +21,17 @@ Usage of Lua from JavaScript
 ----------------------------
 
 ```javascript
-Module.newState().then((L) => {
+Module.newState().then(async (L) => {
     let value;
-    value = L.run("return 1+2"); //value == [3]
+    value = await L.run("return 1+2"); //value == [3]
 
-    value = L.run("return {a = 1, b = 2}"); //value[0] instanceof Module.Table, value[0] instanceof Module.Reference
+    value = await L.run("return {a = 1, b = 2}"); //value[0] instanceof Module.Table, value[0] instanceof Module.Reference
     value[0].get("a"); // == 1
     console.log(value);
     console.log(value[0].toObject(true, true)); //converts Module.Table to JavaScript object (will drop all other Module.Reference-s if unrefAll == true)
     value[0].unref();
 
-    let func = L.run("return function(a,b) return a + b end"); //func[0] instanceof Module.Function, func[0] instanceof Module.Reference
+    let func = await L.run("return function(a,b) return a + b end"); //func[0] instanceof Module.Function, func[0] instanceof Module.Reference
     value = func[0].call(3,4); //value == [7]
     console.log(value);
     func[0].unref();
@@ -81,7 +81,7 @@ The compiled module can be used in NodeJS as follows:
 
 ```js
 const LuaJS = require('./luajs.js');
-Module.newState().then((L) => {
-    console.log(L.run("return 42 + 69"));
+Module.newState().then(async (L) => {
+    console.log(await L.run("return 42 + 69"));
 });
 ```
