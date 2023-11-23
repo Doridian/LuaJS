@@ -267,7 +267,7 @@
         luaNative = importFromC([
             ["jslua_call", "number", ["number", "number"]],
             ["jslua_delete_state", "", ["number"]],
-            ["jslua_execute", "number", ["number", "lstring"], { async: true }],
+            ["jslua_execute", "number", ["number", "number", "number", "number"], { async: true }],
             ["jslua_get_state_global", "number", ["number"]],
             ["jslua_new_state", "number", []],
             ["jslua_popvar", "", ["number", "number"]],
@@ -510,7 +510,7 @@
             this.refArray = {};
             luaStateTable[this.stateGlobal] = this;
 
-            this.readyPromise = this.__run("dofile('/lua/init.lua')");
+            this.readyPromise = this.__run("dofile('/lua/init.lua')", '/lua/init.lua');
         }
 
         getTop() {
@@ -531,20 +531,22 @@
             this.state = undefined;
         }
 
-        async run(code) {
+        async run(code, blockName) {
             await this.readyPromise;
-            return await this.__run(code);
+            return await this.__run(code, blockName);
         }
 
-        async __run(code) {
+        async __run(code, blockName) {
             const codeLen = lengthBytesUTF8(code);
             const codeC = mustMalloc(codeLen + 1);
+            const blockNameC = stringToNewUTF8(blockName || 'input');
             let stack;
             try {
                 stringToUTF8(code, codeC, codeLen + 1);
-                stack = await luaNative.jslua_execute(this.state, codeC, codeLen);
+                stack = await luaNative.jslua_execute(this.state, codeC, codeLen, blockNameC);
             } finally {
                 Module._free(codeC);
+                Module._free(blockNameC);
             }
             const ret = decodeStack(this.state, Math.abs(stack));
             if (stack < 0) {
@@ -568,7 +570,7 @@
                 const res = await fetch(node.src);
                 code = await res.text();
             }
-            await this.run(code);
+            await this.run(code, node.src || `inline code [${document.location.href}]`);
         }
 
         async __tryRunNode(node) {

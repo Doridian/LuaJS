@@ -20,8 +20,8 @@ int jslua_call(lua_State *L, int argcount) {
   return lua_gettop(L) - stack;
 }
 
-int jslua_execute(lua_State *L, char *str, size_t len) {
-  luaL_loadbuffer(L, str, len, "input");
+int jslua_execute(lua_State *L, char *str, size_t len, char *name) {
+  luaL_loadbuffer(L, str, len, name);
   if (lua_isstring(L, -1)) {
     return -1;
   }
