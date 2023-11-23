@@ -570,7 +570,7 @@
                 const res = await fetch(node.src);
                 code = await res.text();
             }
-            await this.run(code, node.src || `inline code [${document.location.href}]`);
+            await this.run(code, node.src || document.location.href);
         }
 
         async __tryRunNode(node) {
