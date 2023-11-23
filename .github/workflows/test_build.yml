@@ -17,7 +17,7 @@ on:
 
 jobs:
   test_build:
-    runs-on: emscripten/emsdk
+    runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
