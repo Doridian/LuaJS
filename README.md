@@ -63,8 +63,8 @@ Below is an example HTML document that enables Lua scripts for the entire page:
     <head>
         <script type="text/javascript" src="luajs.js"></script>
         <script type="text/javascript">
-            Module.newState().then((L) => {
-                L.enableLuaScriptTags(document);
+            Module.newState().then(async (L) => {
+                await L.enableLuaScriptTags(document);
             });
         </script>
         <script type="text/lua">
