@@ -1,0 +1,13 @@
+{
+  "name": "luajs",
+  "version": "1.0.0",
+  "description": "Bindings for C Lua to JavaScript with Emscripten and WebAssembly",
+  "main": "index.js",
+  "scripts": {
+    "clean": "emmake make clean",
+    "build": "emmake make install",
+    "test": "npm run build && node --test"
+  },
+  "author": "Doridian",
+  "license": "MIT"
+}

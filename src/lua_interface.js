@@ -510,9 +510,7 @@
             this.refArray = {};
             luaStateTable[this.stateGlobal] = this;
 
-            this.run("dofile('/lua/init.lua')").catch((e) => {
-                console.error("Error loading init.lua", e);
-            });
+            this.readyPromise = this.run("dofile('/lua/init.lua')");
         }
 
         getTop() {
@@ -578,7 +576,6 @@
 
         async loadDocumentScripts(doc) {
             const xPathResult = document.evaluate('//script[@type="text/lua"]', doc, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
-            const scriptPromises = [];
 
             let node;
             while (node = xPathResult.iterateNext()) {
@@ -628,6 +625,12 @@
     Module.Table = LuaTable;
     Module.Reference = LuaReference;
     Module.ready = readyPromise;
+    Module.newState = async () => {
+        await readyPromise;
+        const L = new LuaState();
+        await L.readyPromise;
+        return L;
+    }
 
     Module.__luaNative = luaNative;
     Module.__pushVar = pushVar;
