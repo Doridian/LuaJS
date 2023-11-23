@@ -10,7 +10,7 @@ EM_ASYNC_JS(int, jslua_await_int, (lua_State *state, int ref), {
     const result = await val;
     Module.__pushVar(state, result);
   } catch (e) {
-    Module.__pushVar(state, e.toString());
+    Module.__pushVar(state, e);
     return 0;
   }
   return 1;

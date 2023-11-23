@@ -40,11 +40,11 @@ int luajs_jsarray__index(lua_State *L) {
   GET_SelfTypedPointerData();
 
   EM_ASM(
-      {
-        const val = Module.__getVarByRef($1);
-        Module.__pushVar($0, val[$2]);
-      },
-      L, data->ptr, num);
+    {
+      const val = Module.__getVarByRef($1);
+      Module.__pushVar($0, val[$2]);
+    },
+    L, data->ptr, num);
   return 1;
 }
 
@@ -61,8 +61,11 @@ int luajs_jsarray__newindex(lua_State *L) {
   GET_SelfTypedPointerData();
 
   lua_rawgeti(L, LUA_REGISTRYINDEX, refIdx);
-  EM_ASM({ Module.__getVarByRef($1)[$2] = Module.__decodeSingle($0, -1, true); },
-         L, data->ptr, val);
+  EM_ASM(
+    {
+      Module.__getVarByRef($1)[$2] = Module.__decodeSingle($0, -1, true);
+    },
+    L, data->ptr, val);
   lua_pop(L, 1);
   luaL_unref(L, LUA_REGISTRYINDEX, refIdx);
 
@@ -81,11 +84,11 @@ int luajs_jsarray__len(lua_State *L) {
 int luajs_jsarray__next(lua_State *L) {
   PEEK_SelfTypedPointerData(-2);
 
-  int num =
-      lua_tonumber(L, -1); // Lua begins at 1, therefor we do not do math here!
+  // Lua begins at 1, therefor we do not do math here!
+  int num = lua_tonumber(L, -1);
 
-  lua_pushnil(
-      L); // Push it to the stack so we can replace it later with the number
+  // Push it to the stack so we can replace it later with the number
+  lua_pushnil(L);
 
   int res = EM_ASM_INT(
       {
@@ -120,15 +123,15 @@ int luajs_jsarray_toTable(lua_State *L) {
   lua_newtable(L);
 
   EM_ASM(
-      {
-        const arr = Module.__getVarByRef($1);
+    {
+      const arr = Module.__getVarByRef($1);
 
-        for (let i = 0; i < arr.length; i++) {
-          Module.__pushVar($0, arr[i]);
-          Module.__luaNative.lua_rawseti($0, -2, i + 1);
-        }
-      },
-      L, data->ptr);
+      for (let i = 0; i < arr.length; i++) {
+        Module.__pushVar($0, arr[i]);
+        Module.__luaNative.lua_rawseti($0, -2, i + 1);
+      }
+    },
+    L, data->ptr);
 
   return 1;
 }

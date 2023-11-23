@@ -36,7 +36,9 @@ static int luajs_jsfunction__call_int(lua_State *L, int call_with_new) {
     return 1;
   }
 
-  luaCallFunctionPointer(data->ptr, L, lua_gettop(L), 1, call_with_new);
+  if (!luaCallFunctionPointer(data->ptr, L, lua_gettop(L), 1, call_with_new)) {
+    lua_error(L);
+  }
   return 1;
 }
 

@@ -235,7 +235,8 @@
         }
     }
 
-    function luaCallFunction(func, state, stackSize, convertArgs, callWithNew) {
+    Module.__luaCallFunctionPointer = function luaCallFunctionPointer(funcPtr, state, stackSize, convertArgs, callWithNew) {
+        const func = getVarByRef(funcPtr);
         let variables, variablesRaw, funcThis;
 
         if (stackSize > 0) {
@@ -248,16 +249,18 @@
             variablesRaw = [];
         }
 
-        if (callWithNew) {
-            pushVar(state, new func(...variablesRaw));
-            return;
+        try {
+            if (callWithNew) {
+                pushVar(state, new func(...variablesRaw));
+                return 1;
+            }
+
+            pushVar(state, func.apply(funcThis, variables));
+            return 1;
+        } catch (e) {
+            pushVar(state, e);
+            return 0;
         }
-
-        pushVar(state, func.apply(funcThis, variables));
-    }
-
-    Module.__luaCallFunctionPointer = function luaCallFunctionPointer(funcPtr, state, stackSize, convertArgs, callWithNew) {
-        return luaCallFunction(getVarByRef(funcPtr), state, stackSize, convertArgs, callWithNew);
     };
 
     function initializeCFuncs() {
@@ -426,7 +429,7 @@
 
             for (let i = 0; i < args.length; i++) {
                 try {
-                    pushVar(this.state, args[i])
+                    pushVar(this.state, args[i]);
                 } catch (e) {
                     for (; i >= 0; i--) {
                         luaNative.js_drop(this.state, 1);
