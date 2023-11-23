@@ -43,6 +43,12 @@
             const name = val[0];
             const returnType = val[1];
             const argTypes = val[2];
+            const options = val[3];
+
+            if (options) {
+                target[name] = Module.cwrap(name, returnType, argTypes, options);
+                continue;
+            }
 
             const cfunc = Module[`_${name}`];
             if (!cfunc) {
@@ -258,6 +264,7 @@
         luaNative = importFromC([
             ["jslua_call", "number", ["number", "number"]],
             ["jslua_delete_state", "", ["number"]],
+            ["jslua_execute", "number", ["number", "lstring"], { async: true }],
             ["jslua_get_state_global", "number", ["number"]],
             ["jslua_new_state", "number", []],
             ["jslua_popvar", "", ["number", "number"]],
@@ -529,7 +536,7 @@
             let stack;
             try {
                 stringToUTF8(code, codeC, codeLen + 1);
-                stack = await Module.ccall('jslua_execute', 'number', ['number', 'number', 'number'], [this.state, codeC, codeLen], { async: true });
+                stack = await luaNative.jslua_execute(this.state, codeC, codeLen);
             } finally {
                 Module._free(codeC);
             }
