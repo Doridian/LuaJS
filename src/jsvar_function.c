@@ -1,4 +1,6 @@
 #include "definitions.h"
+#include "luajs_interface.h"
+
 #include "jsvar.h"
 #include "jsvar_definitions.h"
 #include "jsvar_object.h"
