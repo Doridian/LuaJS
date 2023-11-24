@@ -2,8 +2,7 @@
     "compilerOptions": {
         /*Visithttps://aka.ms/tsconfig.jsontoreadmoreaboutthisfile*/
 
-        "outDir": "dist",
-        "target": "ES2022",
+        "target": "ES2021",
         "module": "None",
         "allowJs": false,
         "esModuleInterop": true,

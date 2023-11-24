@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "clean": "emmake make clean",
-    "build": "emmake make install",
+    "build": "tsc && emmake make install",
     "lint": "echo 'Lint not set up yet'",
     "test": "npm run build && node --test"
   },
