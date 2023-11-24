@@ -8,7 +8,7 @@ interface LuaNative {
     lua_pushnil(state: EmscriptenPointer): void;
     lua_pushboolean(state: EmscriptenPointer, arg1: number): void;
     lua_pushnumber(state: EmscriptenPointer, arg: number): void;
-    lua_pushlstring(state: EmscriptenPointer, arg: string): void;
+    lua_pushlstring(state: EmscriptenPointer, argPtr: EmscriptenPointer, argLen: number): void;
     jslua_pushvar(state: EmscriptenPointer, arg1: any, func: number): void;
     lua_settop(state: EmscriptenPointer, arg1: number): void;
     js_pop_ref(state: EmscriptenPointer): number;
@@ -51,28 +51,6 @@ declare var global: unknown;
         return ptr;
     }
 
-    const primitiveTypes = new Set(["number", "boolean", ""]);
-
-    const specialCFuncs = {
-        'PRIMITIVE;PRIMITIVE,lstring': (func: (prim: unknown, strC: EmscriptenPointer, ...args: unknown[]) => unknown, prim: unknown, strJS: string, ...args: unknown[]) => {
-            const strLen = lengthBytesUTF8(strJS);
-            const strC = mustMalloc(strLen + 1);
-            try {
-                stringToUTF8(strJS, strC, strLen + 1);
-                return func(prim, strC, strLen, ...args);
-            } finally {
-                Module._free(strC);
-            }
-        }
-    };
-
-    function _formatCType(typ: string) {
-        if (primitiveTypes.has(typ)) {
-            return 'PRIMITIVE';
-        }
-        return typ;
-    }
-
     function importFromC(arr: [keyof LuaNative, string, string[], opts?: { async: boolean }][]): LuaNative {
         const target: Partial<LuaNative> = {};
 
@@ -92,31 +70,7 @@ declare var global: unknown;
                 throw new Error(`Unknown C function ${name}`);
             }
 
-            let onlyPrimitives = primitiveTypes.has(returnType);
-            let lastNonPrimitive = -1;
-
-            let i = -1;
-            for (const argType of argTypes) {
-                i++;
-                if (primitiveTypes.has(argType)) {
-                    continue;
-                }
-
-                onlyPrimitives = false;
-                lastNonPrimitive = i;
-            }
-
-            if (onlyPrimitives) {
-                target[name] = cfunc;
-                continue;
-            }
-
-            const searchString = `${_formatCType(returnType)};${argTypes.slice(0, lastNonPrimitive + 1).map(_formatCType).join(',')}`;
-            const cfuncWrapped = (specialCFuncs as Record<string, Function>)[searchString];
-            if (!cfuncWrapped) {
-                throw new Error(`Unknown complex type C handler for ${searchString}`);
-            }
-            target[name] = cfuncWrapped.bind(undefined, cfunc);
+            target[name] = cfunc;
         }
 
         return target as LuaNative;
@@ -257,7 +211,14 @@ declare var global: unknown;
                 luaNative!.lua_pushnumber(state, arg);
                 break;
             case "string":
-                luaNative!.lua_pushlstring(state, arg);
+                const argLen = lengthBytesUTF8(arg);
+                const argC = mustMalloc(argLen + 1);
+                try {
+                    stringToUTF8(arg, argC, argLen + 1);
+                    luaNative!.lua_pushlstring(state, argC, argLen);
+                } finally {
+                    Module._free(argC);
+                }
                 break;
             case "function":
                 luaNative!.jslua_pushvar(state, luaGetVarPtr(arg), luaJSDataTypes.function);
@@ -323,7 +284,7 @@ declare var global: unknown;
             ["lua_gettop", "number", ["number"]],
             ["lua_next", "number", ["number", "number"]],
             ["lua_pushboolean", "", ["number", "boolean"]],
-            ["lua_pushlstring", "", ["number", "lstring"]],
+            ["lua_pushlstring", "", ["number", "number", "number"]],
             ["lua_pushnil", "", ["number"]],
             ["lua_pushnumber", "", ["number", "number"]],
             ["lua_pushvalue", "", ["number", "number"]],
