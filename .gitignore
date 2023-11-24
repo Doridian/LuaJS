@@ -6,3 +6,4 @@
 /src/*.[oa]
 /src/*.html
 /tmp
+node_modules

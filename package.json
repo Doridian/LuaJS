@@ -10,5 +10,8 @@
     "test": "npm run build && node --test"
   },
   "author": "Doridian",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.2"
+  }
 }
