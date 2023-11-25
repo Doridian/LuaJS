@@ -1,38 +1,3 @@
-interface LuaNative {
-    lua_type(state: EmscriptenPointer, pos: number): number;
-    js_tonumber(state: EmscriptenPointer, pos: number): number;
-    js_tostring(state: EmscriptenPointer, pos: number): string;
-    jslua_toref(state: EmscriptenPointer, pos: number): number;
-    jslua_popvar(state: EmscriptenPointer, pos: number): number;
-    js_drop(state: EmscriptenPointer, arg1: number): void;
-    lua_pushnil(state: EmscriptenPointer): void;
-    lua_pushboolean(state: EmscriptenPointer, arg1: number): void;
-    lua_pushnumber(state: EmscriptenPointer, arg: number): void;
-    lua_pushlstring(state: EmscriptenPointer, argPtr: EmscriptenPointer, argLen: number): void;
-    jslua_pushvar(state: EmscriptenPointer, arg1: any, func: number): void;
-    lua_settop(state: EmscriptenPointer, arg1: number): void;
-    js_pop_ref(state: EmscriptenPointer): number;
-    lua_tolstring(state: EmscriptenPointer, i: number, lenC: number): number;
-    lua_tonumberx(state: EmscriptenPointer, i: any, isNumberC: number): number;
-    jslua_unref(state: EmscriptenPointer, index: any): void;
-    jslua_get_state_global(state: EmscriptenPointer): number;
-    jslua_pushref(state: EmscriptenPointer, index: number): void;
-    lua_getmetatable(state: EmscriptenPointer, arg1: number): number;
-    lua_setmetatable(state: EmscriptenPointer, arg1: number): number;
-    jslua_call(state: EmscriptenPointer, length: number): number;
-    lua_settable(state: EmscriptenPointer, arg1: number): void;
-    lua_gettable(state: EmscriptenPointer, arg1: number): void;
-    lua_next(state: EmscriptenPointer, arg1: number): number;
-    lua_pushvalue(state: EmscriptenPointer, arg1: number): void;
-    jslua_new_state(): EmscriptenPointer;
-    lua_gettop(state: EmscriptenPointer): number;
-    jslua_delete_state(state: EmscriptenPointer): void;
-    jslua_execute(state: EmscriptenPointer, codeC: number, codeLen: number, blockNameC: any): any;
-    lua_createtable(state: EmscriptenPointer, arg1: number, arg2: number): void;
-    lua_rawset(state: EmscriptenPointer, arg1: number): void;
-    lua_rawseti(state: EmscriptenPointer, arg1: number): void;
-}
-
 declare var global: unknown;
 
 (function () {
@@ -51,7 +16,7 @@ declare var global: unknown;
         return ptr;
     }
 
-    function importFromC(arr: [keyof LuaNative, string, string[], opts?: { async: boolean }][]): LuaNative {
+    function importFromC(arr: [keyof LuaNativeFromC, string, string[], opts?: { async: boolean }][]): LuaNative {
         const target: Partial<LuaNative> = {};
 
         for (const val of arr) {
@@ -65,12 +30,13 @@ declare var global: unknown;
                 continue;
             }
 
-            const cfunc = (Module as unknown as Record<string, any>)[`_${name}`];
+            const cfunc = Module[`_${name}`];
             if (!cfunc) {
                 throw new Error(`Unknown C function ${name}`);
             }
 
-            target[name] = cfunc;
+            // TS doesn't like the signature hackery here
+            target[name] = cfunc as unknown as any;
         }
 
         return target as LuaNative;
@@ -236,7 +202,7 @@ declare var global: unknown;
     }
 
     Module.__luaCallFunctionPointer = function luaCallFunctionPointer(funcPtr: EmscriptenPointer, state: EmscriptenPointer, stackSize: number, convertArgs: boolean, callWithNew: boolean) {
-        const func = getVarByRef(funcPtr) as Function;
+        const func = getVarByRef(funcPtr) as JSLuaFunction;
         let variables: unknown[];
         let variablesRaw: unknown[];
         let funcThis: unknown | undefined;
@@ -253,7 +219,7 @@ declare var global: unknown;
 
         try {
             if (callWithNew) {
-                pushVar(state, new (func as unknown as any)(...variablesRaw));
+                pushVar(state, new func(...variablesRaw));
                 return 1;
             }
 

@@ -7,19 +7,12 @@ interface EmscriptenModule {
     _malloc(size: number): EmscriptenPointer;
 }
 
-interface LibraryManager {
-    library: object;
-}
-
-var Module: EmscriptenModule;
-var LibraryManager: LibraryManager;
-
 function lengthBytesUTF8(str: string): number;
 function stringToUTF8(str: string, ptr: EmscriptenPointer, maxBytes: number): void;
 function UTF8ToString(ptr: EmscriptenPointer, maxBytes?: number): string;
 function getValue(ptr: EmscriptenPointer, size: string, noSafe?: boolean): number;
 function stringToNewUTF8(str: string): EmscriptenPointer;
-function mergeInto(obj: object, other: object, options?: { noOverride?: boolean }): object; 
+
 // extensions
 interface EmscriptenModule {
     __luaRemoveVarPtr: (varPtr: number) => void;
@@ -36,5 +29,6 @@ interface EmscriptenModule {
     Table: typeof LuaTable;
     Reference: typeof LuaReference;
     ready: Promise<unknown>;
-
 }
+
+declare var Module: EmscriptenModule & EmscriptenLuaNative;
