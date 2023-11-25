@@ -16,7 +16,7 @@ declare var global: unknown;
         return ptr;
     }
 
-    function importFromC(arr: [keyof LuaNativeFromC, string, string[], opts?: { async: boolean }][]): LuaNative {
+    function importFromC<K  extends keyof LuaNativeFromC>(arr: [K, string, string[], opts?: { async: boolean }][]): LuaNative {
         const target: Partial<LuaNative> = {};
 
         for (const val of arr) {

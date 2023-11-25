@@ -1,6 +1,6 @@
 type EmscriptenPointer = number;
 interface EmscriptenModule {
-    cwrap(name: string, returnType: string, argTypes: string[], options: { async: boolean; }): Todo;
+    cwrap<K extends keyof LuaNativeFromC>(name: K, returnType: string, argTypes: string[], options: { async: boolean; }): LuaNativeFromC[K];
     __pushVar: (state: number, arg: any) => void;
     __onready: () => void;
     _free(strC: EmscriptenPointer): unknown;
