@@ -1,8 +1,7 @@
 type EmscriptenPointer = number;
 interface EmscriptenModule {
     cwrap<K extends keyof LuaNativeFromC>(name: K, returnType: string, argTypes: string[], options: { async: boolean; }): LuaNativeFromC[K];
-    __pushVar: (state: number, arg: any) => void;
-    __onready: () => void;
+
     _free(strC: EmscriptenPointer): unknown;
     _malloc(size: number): EmscriptenPointer;
 }
@@ -22,6 +21,8 @@ interface EmscriptenModule {
     __decodeSingle: (state: number, pos: number, convertArgs?: boolean) => unknown;
     __getVarByRef: (index: number) => any;
     newState: () => Promise<LuaState>;
+    __pushVar: (state: number, arg: any) => void;
+    __onready: () => void;
 
     __luaNative: LuaNative;
     State: typeof LuaState;
