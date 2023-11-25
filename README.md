@@ -15,7 +15,7 @@ You'll need emscripten installed. If you're running a system that supports homeb
 Build instructions
 ------------------
 
-Run `emmake make clean && emmake make install` then you have the compiled files in the dist folder.
+Run `npm install && npm run build` then you have the compiled files in the dist folder.
 
 Usage of Lua from JavaScript
 ----------------------------
