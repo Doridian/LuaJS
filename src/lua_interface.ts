@@ -30,13 +30,12 @@ declare var global: unknown;
                 continue;
             }
 
-            const cfunc = Module[`_${name}`];
+            const cfunc = Module[`_${name}`] as LuaNativeFromC[K];
             if (!cfunc) {
                 throw new Error(`Unknown C function ${name}`);
             }
 
-            // TS doesn't like the signature hackery here
-            target[name] = cfunc as unknown as any;
+            target[name] = cfunc;
         }
 
         return target as LuaNative;
