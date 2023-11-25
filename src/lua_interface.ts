@@ -30,12 +30,12 @@ declare var global: unknown;
                 continue;
             }
 
-            const cfunc = Module[`_${name}`] as LuaNativeFromC[K];
+            const cfunc = Module[`_${name}`];
             if (!cfunc) {
                 throw new Error(`Unknown C function ${name}`);
             }
 
-            target[name] = cfunc;
+            target[name] = cfunc as LuaNativeFromC[K];
         }
 
         return target as LuaNative;
