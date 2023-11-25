@@ -65,7 +65,7 @@ declare var global: unknown;
                 continue;
             }
 
-            const cfunc = (Module as unknown as any)[`_${name}`];
+            const cfunc = (Module as unknown as Record<string, any>)[`_${name}`];
             if (!cfunc) {
                 throw new Error(`Unknown C function ${name}`);
             }
