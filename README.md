@@ -8,9 +8,9 @@ Setup Instructions
 
 Make certain to download your git submodules, run `git submodule update --init --recursive`.
 
-You'll need emscripten installed. If you're running a system that supports homebrew, you can brew install:
+You'll need emscripten and NodeJS installed. If you're running a system that supports homebrew, you can brew install:
 * [Installing Homebrew](https://docs.brew.sh/Installation)
-* Install Emscripten: `brew install emscripten`
+* Install Emscripten: `brew install emscripten && brew install node`
 
 Build instructions
 ------------------
