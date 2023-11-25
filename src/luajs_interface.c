@@ -2,7 +2,7 @@
 #include "luajs_interface.h"
 
 EM_JS(void, luaRemoveVarPtr, (int varPtr), {
-    Module.__removeVarPtr(varPtr);
+    Module.__luaRemoveVarPtr(varPtr);
 });
 
 EM_JS(int, luaCallFunctionPointer, (int func_ptr, lua_State *L, int stack_size, int convert_args, int call_with_new), {

@@ -267,7 +267,7 @@ declare var global: unknown;
 
     function initializeCFuncs() {
         luaNative = importFromC([
-            ["jslua_call", "number", ["number", "number"]],
+            ["jslua_call", "number", ["number", "number"], { async: true }],
             ["jslua_delete_state", "", ["number"]],
             ["jslua_execute", "number", ["number", "number", "number", "number"], { async: true }],
             ["jslua_get_state_global", "number", ["number"]],
@@ -433,7 +433,7 @@ declare var global: unknown;
             return LuaFunction.prototype.call.bind(this);
         }
 
-        call(...args: unknown[]) {
+        async call(...args: unknown[]) {
             this.push(this.state);
 
             for (let i = 0; i < args.length; i++) {
@@ -447,7 +447,7 @@ declare var global: unknown;
                 }
             }
 
-            const stack = luaNative!.jslua_call(this.state, args.length);
+            const stack = await luaNative!.jslua_call(this.state, args.length);
             const ret = decodeStack(this.state, Math.abs(stack));
             if (stack < 0) {
                 throw new LuaError(ret[0] as string);

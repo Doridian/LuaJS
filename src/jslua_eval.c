@@ -12,12 +12,14 @@ int jslua_call(lua_State *L, int argcount) {
   lua_remove(L, -2);
   lua_insert(L, errindex);
 
-  if (lua_pcall(L, argcount, LUA_MULTRET, errindex)) {
-    lua_remove(L, 1);
-    return -(lua_gettop(L) - stack);
-  }
+  int had_error = lua_pcall(L, argcount, LUA_MULTRET, errindex);
   lua_remove(L, 1);
-  return lua_gettop(L) - stack;
+  int stack_len = lua_gettop(L) - stack;
+
+  if (had_error) {
+    return -stack_len;
+  }
+  return stack_len;
 }
 
 int jslua_execute(lua_State *L, char *str, size_t len, char *name) {
