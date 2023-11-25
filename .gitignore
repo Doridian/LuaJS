@@ -4,7 +4,6 @@
 /src/luajs.*
 !/src/luajs.c
 /src/*.[oa]
-/src/*.html
 /src/*.js
 /tmp
 node_modules
