@@ -1,4 +1,6 @@
 interface LuaNativeFromC {
+    jslua_alloc_int(): EmscriptenPointer;
+    jslua_alloc_size_t(): EmscriptenPointer;
     jslua_call(state: EmscriptenPointer, length: number): number;
     jslua_delete_state(state: EmscriptenPointer): void;
     jslua_execute(state: EmscriptenPointer, codeC: number, codeLen: number, blockNameC: any): any;
@@ -7,6 +9,8 @@ interface LuaNativeFromC {
     jslua_popvar(state: EmscriptenPointer, pos: number): number;
     jslua_pushref(state: EmscriptenPointer, index: number): void;
     jslua_pushvar(state: EmscriptenPointer, arg1: any, func: number): void;
+    jslua_read_int(ptr: EmscriptenPointer): number;
+    jslua_read_size_t(ptr: EmscriptenPointer): number;
     jslua_toref(state: EmscriptenPointer, pos: number): number;
     jslua_unref(state: EmscriptenPointer, index: any): void;
     lua_createtable(state: EmscriptenPointer, arg1: number, arg2: number): void;

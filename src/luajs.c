@@ -58,8 +58,23 @@ global_State *jslua_get_state_global(lua_State *L) { return G(L); }
 
 void jslua_delete_state(lua_State *L) { lua_close(L); }
 
-uint64_t jslua_init_sizeof_int() { return sizeof(int); }
-uint64_t jslua_init_sizeof_size_t() { return sizeof(size_t); }
+int* jslua_alloc_int() {
+  int* ptr = malloc(sizeof(int));
+  return ptr;
+}
+
+double jslua_read_int(int* ptr) {
+  return *ptr;
+}
+
+size_t* jslua_alloc_size_t() {
+  size_t* ptr = malloc(sizeof(size_t));
+  return ptr;
+}
+
+double jslua_read_size_t(size_t* ptr) {
+  return *ptr;
+}
 
 int main() {
   EM_ASM({

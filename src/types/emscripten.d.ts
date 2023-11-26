@@ -16,8 +16,6 @@ function stringToNewUTF8(str: string): EmscriptenPointer;
 interface EmscriptenModule {
     __luaRemoveVarPtr: (varPtr: number) => void;
     __luaCallFunctionPointer: (funcPtr: number, state: number, stackSize: number, convertArgs: boolean, callWithNew: boolean) => 1 | 0;
-    _jslua_init_sizeof_int(): number;
-    _jslua_init_sizeof_size_t(): number;
     __decodeSingle: (state: number, pos: number, convertArgs?: boolean) => unknown;
     __getVarByRef: (index: number) => any;
     newState: () => Promise<LuaState>;

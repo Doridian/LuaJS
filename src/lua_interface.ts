@@ -50,36 +50,31 @@ declare var global: unknown;
 
     const luaStateTable: Record<number, LuaState> = {};
 
-    const luaTypes = {
-        nil: 0,
-        bool: 1,
-        boolean: 1,
-        lightuserdata: 2,
-        number: 3,
-        string: 4,
-        table: 5,
-        function: 6,
-        userdata: 7,
-        thread: 8,
-        coroutine: 8
+    const enum LuaTypes {
+        nil = 0,
+        bool = 1,
+        boolean = 1,
+        lightuserdata = 2,
+        number = 3,
+        string = 4,
+        table = 5,
+        function = 6,
+        userdata = 7,
+        thread = 8,
+        coroutine = 8
     };
 
-    const luaJSDataTypes = {
-        unknown: 0,
-        function: 1,
-        array: 2,
-        object: 3,
-        symbol: 4,
+    const enum LuaJSDataTypes {
+        unknown = 0,
+        function = 1,
+        array = 2,
+        object = 3,
+        symbol = 4,
     };
 
-    const luaConstants = {
-        LUA_REGISTRYINDEX: -10000,
-        LUA_ENVIRONINDEX: -10001,
-        LUA_GLOBALSINDEX: -10002,
-        LUA_RIDX_GLOBALS: 2
-    };
+    type LuaTableRef = [unknown, number, number];
 
-    type LuaTableRef =[unknown, number, number]
+    const LUA_RIDX_GLOBALS = 2;
 
     let luaLastRefIdx = -1;
     const luaPassedVars = new Map<number, LuaTableRef>();
@@ -123,13 +118,13 @@ declare var global: unknown;
 
     function decodeSingle(state: EmscriptenPointer, pos: number, convertArgs = false): unknown {
         switch (luaNative!.lua_type(state, pos)) {
-            case luaTypes.nil:
+            case LuaTypes.nil:
                 return undefined;
-            case luaTypes.number:
+            case LuaTypes.number:
                 return luaNative!.js_tonumber(state, pos);
-            case luaTypes.string:
+            case LuaTypes.string:
                 return luaNative!.js_tostring(state, pos);
-            case luaTypes.table:
+            case LuaTypes.table:
                 const tbl = new LuaTable(state, luaNative!.jslua_toref(state, pos));
                 if (convertArgs) {
                     const ret = tbl.toObject(true, true);
@@ -137,9 +132,9 @@ declare var global: unknown;
                     return ret;
                 }
                 return tbl;
-            case luaTypes.userdata:
+            case LuaTypes.userdata:
                 return getVarByRef(luaNative!.jslua_popvar(state, pos));
-            case luaTypes.function:
+            case LuaTypes.function:
                 const ret = new LuaFunction(state, luaNative!.jslua_toref(state, pos));
                 if (convertArgs) {
                     return ret.getClosure();
@@ -186,15 +181,15 @@ declare var global: unknown;
                 }
                 break;
             case "function":
-                luaNative!.jslua_pushvar(state, luaGetVarPtr(arg), luaJSDataTypes.function);
+                luaNative!.jslua_pushvar(state, luaGetVarPtr(arg), LuaJSDataTypes.function);
                 break;
             default:
                 if (arg instanceof LuaReference) {
                     arg.push(state);
                 } else if (arg instanceof Array) {
-                    luaNative!.jslua_pushvar(state, luaGetVarPtr(arg), luaJSDataTypes.array);
+                    luaNative!.jslua_pushvar(state, luaGetVarPtr(arg), LuaJSDataTypes.array);
                 } else {
-                    luaNative!.jslua_pushvar(state, luaGetVarPtr(arg), luaJSDataTypes.object);
+                    luaNative!.jslua_pushvar(state, luaGetVarPtr(arg), LuaJSDataTypes.object);
                 }
                 break;
         }
@@ -232,6 +227,8 @@ declare var global: unknown;
 
     function initializeCFuncs() {
         luaNative = importFromC([
+            ["jslua_alloc_int", "number", []],
+            ["jslua_alloc_size_t", "number", []],
             ["jslua_call", "number", ["number", "number"], { async: true }],
             ["jslua_delete_state", "", ["number"]],
             ["jslua_execute", "number", ["number", "number", "number", "number"], { async: true }],
@@ -240,6 +237,8 @@ declare var global: unknown;
             ["jslua_popvar", "", ["number", "number"]],
             ["jslua_pushref", "", ["number", "number"]],
             ["jslua_pushvar", "", ["number", "number", "number"]],
+            ["jslua_read_int", "number", ["number"]],
+            ["jslua_read_size_t", "number", ["number"]],
             ["jslua_toref", "number", ["number", "number"]],
             ["jslua_unref", "", ["number", "number"]],
 
@@ -262,13 +261,6 @@ declare var global: unknown;
             ["lua_tonumberx", "number", ["number", "number", "number"]],
             ["lua_type", "number", ["number", "number"]],
         ]);
-
-        const INT_SIZE = Module._jslua_init_sizeof_int();
-        const SIZE_T_SIZE = Module._jslua_init_sizeof_size_t();
-        const size_mapper = (numval: number, prefix: string) => `${prefix}${numval * 8}`;
-        const INT_GETVALUE_TYPE = size_mapper(INT_SIZE, 'i');
-        const SIZE_T_GETVALUE_TYPE = size_mapper(SIZE_T_SIZE, 'i'); // should change to "u", but not supported
-
         Module.__luaNative = luaNative;
 
         luaNative!.js_drop = function js_drop(state: EmscriptenPointer, n: number) {
@@ -282,10 +274,10 @@ declare var global: unknown;
         };
 
         luaNative!.js_tostring = function js_tostring(state: number, i: number): string {
-            const lenC = mustMalloc(SIZE_T_SIZE);
+            const lenC = luaNative!.jslua_alloc_size_t();
             try {
                 const strC = luaNative!.lua_tolstring(state, i, lenC);
-                const strLen = getValue(lenC, SIZE_T_GETVALUE_TYPE);
+                const strLen = luaNative!.jslua_read_size_t(lenC);
                 const strJS = UTF8ToString(strC, strLen);
                 return strJS;
             } finally {
@@ -294,10 +286,10 @@ declare var global: unknown;
         };
 
         luaNative!.js_tonumber = function js_tonumber(state, i) {
-            const isNumberC = mustMalloc(INT_SIZE);
+            const isNumberC = luaNative!.jslua_alloc_int();
             try {
                 const num = luaNative!.lua_tonumberx(state, i, isNumberC);
-                const isNumber = getValue(isNumberC, INT_GETVALUE_TYPE);
+                const isNumber = luaNative!.jslua_read_int(isNumberC);
                 if (!isNumber) {
                     throw new Error("Not a number");
                 }
@@ -534,7 +526,7 @@ declare var global: unknown;
         }
 
         getGlobalTable() {
-            return new LuaTable(this.state!, luaConstants.LUA_RIDX_GLOBALS);
+            return new LuaTable(this.state!, LUA_RIDX_GLOBALS);
         }
 
         createTable() {
