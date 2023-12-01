@@ -196,22 +196,22 @@ declare var global: unknown;
     }
 
     Module.__luaCallFunctionPointer = function luaCallFunctionPointer(funcPtr: EmscriptenPointer, state: EmscriptenPointer, stackSize: number, convertArgs: boolean, callWithNew: boolean) {
-        const func = getVarByRef(funcPtr) as JSLuaFunction;
-        let variables: unknown[];
-        let variablesRaw: unknown[];
-        let funcThis: unknown | undefined;
-
-        if (stackSize > 0) {
-            variablesRaw = decodeStack(state, stackSize, convertArgs);
-            funcThis = variablesRaw[0];
-            variables = variablesRaw.slice(1);
-        } else {
-            funcThis = undefined;
-            variables = [];
-            variablesRaw = [];
-        }
-
         try {
+            const func = getVarByRef(funcPtr) as JSLuaFunction;
+            let variables: unknown[];
+            let variablesRaw: unknown[];
+            let funcThis: unknown | undefined;
+
+            if (stackSize > 0) {
+                variablesRaw = decodeStack(state, stackSize, convertArgs);
+                funcThis = variablesRaw[0];
+                variables = variablesRaw.slice(1);
+            } else {
+                funcThis = undefined;
+                variables = [];
+                variablesRaw = [];
+            }
+
             if (callWithNew) {
                 pushVar(state, new func(...variablesRaw));
                 return 1;
