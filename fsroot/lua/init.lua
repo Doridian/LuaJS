@@ -170,4 +170,3 @@ end
 table.insert(package.searchers, fetch_searcher(".lua", false))
 table.insert(package.searchers, fetch_searcher(".so", true))
 table.insert(package.searchers, fetch_searcher(".wasm", true))
-
