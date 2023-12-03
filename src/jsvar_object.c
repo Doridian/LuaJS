@@ -104,8 +104,7 @@ int luajs_jsobject_toTable(lua_State *L) {
 
         Module.__pushVar($0, idx);
         Module.__pushVar($0, obj[idx]);
-        Module.__luaNative.lua_rawseti($0, -3);
-        Module.__luaNative.js_drop($0, 1);
+        Module.__luaNative.lua_rawset($0, -3);
       }
     },
     L, data->ptr);

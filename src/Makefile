@@ -51,6 +51,7 @@ BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
 '_lua_setmetatable',\
 '_lua_settable',\
 '_lua_settop',\
+'_lua_toboolean',\
 '_lua_tolstring',\
 '_lua_tonumberx',\
 '_lua_type'\

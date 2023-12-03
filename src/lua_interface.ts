@@ -120,6 +120,8 @@ declare var global: unknown;
         switch (luaNative!.lua_type(state, pos)) {
             case LuaTypes.nil:
                 return undefined;
+            case LuaTypes.boolean:
+                return luaNative!.lua_toboolean(state, pos) !== 0;
             case LuaTypes.number:
                 return luaNative!.js_tonumber(state, pos);
             case LuaTypes.string:
@@ -258,6 +260,7 @@ declare var global: unknown;
             ["lua_settable", "", ["number", "number"]],
             ["lua_settop", "", ["number", "number"]],
             ["lua_tolstring", "number", ["number", "number", "number"]],
+            ["lua_toboolean", "number", ["number", "number"]],
             ["lua_tonumberx", "number", ["number", "number", "number"]],
             ["lua_type", "number", ["number", "number"]],
         ]);

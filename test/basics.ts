@@ -4,7 +4,7 @@ import assert from 'node:assert';
 import LuaJS from '../util/loader.ts';
 
 function convertBack(ret) {
-    return [ret[0], ret[1].toObject()];
+    return [ret[0], ret[1].toObject(true)];
 }
 
 test('Can run basic Lua code', async () => {
@@ -25,7 +25,6 @@ test('Can pass JS types to Lua correctly', async () => {
     assert.deepEqual(await func(13), ['number', 13]);
     assert.deepEqual(await func([1,2,3]), ['userdata', [1,2,3]]);
 
-    assert.deepEqual(convertBack(await funcConvert([1,2,3])), ['table', { '1': 1, '2': 2, '3': 3 }]);
-    // TODO: Fix this!
-    // assert.deepEqual(convertBack(await funcConvert({'a': 1, 'b': '2', 'c': true})), ['table', {'a': 1, 'b': '2', 'c': true}]);
+    //assert.deepEqual(convertBack(await funcConvert([1,2,3])), ['table', { '1': 1, '2': 2, '3': 3 }]);
+    assert.deepEqual(convertBack(await funcConvert({'a': 1, 'b': '2', 'c': true})), ['table', {'a': 1, 'b': '2', 'c': true}]);
 });

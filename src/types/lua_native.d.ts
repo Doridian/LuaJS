@@ -28,6 +28,7 @@ interface LuaNativeFromC {
     lua_setmetatable(state: EmscriptenPointer, arg1: number): number;
     lua_settable(state: EmscriptenPointer, arg1: number): void;
     lua_settop(state: EmscriptenPointer, arg1: number): void;
+    lua_toboolean(state: EmscriptenPointer, arg1: number): number;
     lua_tolstring(state: EmscriptenPointer, i: number, lenC: number): number;
     lua_tonumberx(state: EmscriptenPointer, i: any, isNumberC: number): number;
     lua_type(state: EmscriptenPointer, pos: number): number;
