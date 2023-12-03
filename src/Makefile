@@ -18,7 +18,7 @@ INSTALL_DEST=../dist
 
 LUA_A= $(LUA_SRC)/liblua.a
 
-LIB_O= luajs_interface.o jsvar.o jslua_async.o jslua_ref.o jslua_eval.o jsvar_object.o jsvar_array.o jsvar_function.o
+LIB_O= luajs_interface.o jsvar.o luajs_async.o luajs_ref.o luajs_eval.o jsvar_object.o jsvar_array.o jsvar_function.o
 
 BINARY_T=luajs.js
 BINARY_O=luajs.o
@@ -26,20 +26,20 @@ BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
 '_main',\
 '_malloc',\
 '_free',\
-'_jslua_alloc_int',\
-'_jslua_alloc_size_t',\
-'_jslua_call',\
-'_jslua_delete_state',\
-'_jslua_execute',\
-'_jslua_get_state_global',\
-'_jslua_new_state',\
-'_jslua_popvar',\
-'_jslua_pushref',\
-'_jslua_pushvar',\
-'_jslua_read_int',\
-'_jslua_read_size_t',\
-'_jslua_toref',\
-'_jslua_unref',\
+'_luajs_alloc_int',\
+'_luajs_alloc_size_t',\
+'_luajs_call',\
+'_luajs_delete_state',\
+'_luajs_execute',\
+'_luajs_get_state_global',\
+'_luajs_new_state',\
+'_luajs_popvar',\
+'_luajs_pushref',\
+'_luajs_pushvar',\
+'_luajs_read_int',\
+'_luajs_read_size_t',\
+'_luajs_toref',\
+'_luajs_unref',\
 '_lua_createtable',\
 '_lua_getmetatable',\
 '_lua_gettable',\
@@ -55,6 +55,7 @@ BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
 '_lua_setmetatable',\
 '_lua_settable',\
 '_lua_settop',\
+'_lua_toboolean',\
 '_lua_tolstring',\
 '_lua_tonumberx',\
 '_lua_type'\

@@ -1,18 +1,18 @@
 interface LuaNativeFromC {
-    jslua_alloc_int(): EmscriptenPointer;
-    jslua_alloc_size_t(): EmscriptenPointer;
-    jslua_call(state: EmscriptenPointer, length: number): number;
-    jslua_delete_state(state: EmscriptenPointer): void;
-    jslua_execute(state: EmscriptenPointer, codeC: number, codeLen: number, blockNameC: any): any;
-    jslua_get_state_global(state: EmscriptenPointer): number;
-    jslua_new_state(): EmscriptenPointer;
-    jslua_popvar(state: EmscriptenPointer, pos: number): number;
-    jslua_pushref(state: EmscriptenPointer, index: number): void;
-    jslua_pushvar(state: EmscriptenPointer, arg1: any, func: number): void;
-    jslua_read_int(ptr: EmscriptenPointer): number;
-    jslua_read_size_t(ptr: EmscriptenPointer): number;
-    jslua_toref(state: EmscriptenPointer, pos: number): number;
-    jslua_unref(state: EmscriptenPointer, index: any): void;
+    luajs_alloc_int(): EmscriptenPointer;
+    luajs_alloc_size_t(): EmscriptenPointer;
+    luajs_call(state: EmscriptenPointer, length: number): number;
+    luajs_delete_state(state: EmscriptenPointer): void;
+    luajs_execute(state: EmscriptenPointer, codeC: number, codeLen: number, blockNameC: any): any;
+    luajs_get_state_global(state: EmscriptenPointer): number;
+    luajs_new_state(): EmscriptenPointer;
+    luajs_popvar(state: EmscriptenPointer, pos: number): number;
+    luajs_pushref(state: EmscriptenPointer, index: number): void;
+    luajs_pushvar(state: EmscriptenPointer, arg1: any, func: number): void;
+    luajs_read_int(ptr: EmscriptenPointer): number;
+    luajs_read_size_t(ptr: EmscriptenPointer): number;
+    luajs_toref(state: EmscriptenPointer, pos: number): number;
+    luajs_unref(state: EmscriptenPointer, index: any): void;
     lua_createtable(state: EmscriptenPointer, arg1: number, arg2: number): void;
     lua_getmetatable(state: EmscriptenPointer, arg1: number): number;
     lua_gettable(state: EmscriptenPointer, arg1: number): void;
@@ -28,6 +28,7 @@ interface LuaNativeFromC {
     lua_setmetatable(state: EmscriptenPointer, arg1: number): number;
     lua_settable(state: EmscriptenPointer, arg1: number): void;
     lua_settop(state: EmscriptenPointer, arg1: number): void;
+    lua_toboolean(state: EmscriptenPointer, arg1: number): number;
     lua_tolstring(state: EmscriptenPointer, i: number, lenC: number): number;
     lua_tonumberx(state: EmscriptenPointer, i: any, isNumberC: number): number;
     lua_type(state: EmscriptenPointer, pos: number): number;
@@ -44,7 +45,7 @@ type EmscriptenLuaNative = {
     [k in keyof LuaNativeFromC as `_${k}`]: LuaNativeFromC[k];
 };
 
-interface JSLuaConstructor {
+interface luajsConstructor {
     new (...params: unknown): unknown;
 }
-type JSLuaFunction = Function & JSLuaConstructor;
+type luajsFunction = Function & luajsConstructor;

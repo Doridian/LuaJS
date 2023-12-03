@@ -1,7 +1,7 @@
 #include "definitions.h"
 
-#include "jslua_eval.h"
-#include "jslua_async.h"
+#include "luajs_eval.h"
+#include "luajs_async.h"
 
 #include "jsvar.h"
 #include "jsvar_array.h"
@@ -17,7 +17,7 @@ int luajs_eval(lua_State *L) {
   return 1;
 }
 
-lua_State *jslua_new_state() {
+lua_State *luajs_new_state() {
   lua_State *L = luaL_newstate(); /* create state */
   lua_gc(L, LUA_GCSTOP, 0);       /* stop collector during initialization */
   luaL_openlibs(L);               /* open libraries */
@@ -45,7 +45,7 @@ lua_State *jslua_new_state() {
   lua_getglobal(L, "js");
 
   lua_pushstring(L, "global");
-  jslua_pushvar(L, -1, TYPE_JSOBJECT);
+  luajs_pushvar(L, -1, TYPE_JSOBJECT);
   lua_rawset(L, -3);
 
   lua_pop(L, 1);
@@ -54,25 +54,25 @@ lua_State *jslua_new_state() {
   return L;
 }
 
-global_State *jslua_get_state_global(lua_State *L) { return G(L); }
+global_State *luajs_get_state_global(lua_State *L) { return G(L); }
 
-void jslua_delete_state(lua_State *L) { lua_close(L); }
+void luajs_delete_state(lua_State *L) { lua_close(L); }
 
-int* jslua_alloc_int() {
+int* luajs_alloc_int() {
   int* ptr = malloc(sizeof(int));
   return ptr;
 }
 
-double jslua_read_int(int* ptr) {
+double luajs_read_int(int* ptr) {
   return *ptr;
 }
 
-size_t* jslua_alloc_size_t() {
+size_t* luajs_alloc_size_t() {
   size_t* ptr = malloc(sizeof(size_t));
   return ptr;
 }
 
-double jslua_read_size_t(size_t* ptr) {
+double luajs_read_size_t(size_t* ptr) {
   return *ptr;
 }
 

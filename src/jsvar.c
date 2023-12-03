@@ -27,7 +27,7 @@ void luajs_jsvar_init(lua_State *L) {
   lua_rawset(L, -3);
 }
 
-void jslua_getmetatable(lua_State *L, int type) {
+void luajs_getmetatable(lua_State *L, int type) {
   switch (type) {
   case TYPE_JSFUNCTION:
     GET_LIB_GLOBAL("js", "__mt_js_function")
@@ -44,20 +44,20 @@ void jslua_getmetatable(lua_State *L, int type) {
   }
 }
 
-void jslua_pushvar(lua_State *L, int varptr, int type) {
+void luajs_pushvar(lua_State *L, int varptr, int type) {
   TypedPointerData *data =
       (TypedPointerData *)lua_newuserdata(L, sizeof(TypedPointerData));
   data->ptr = varptr;
   data->type = type;
 
-  jslua_getmetatable(L, type);
+  luajs_getmetatable(L, type);
 
   lua_setmetatable(L, -3);
 
   lua_pop(L, 1);
 }
 
-int jslua_popvar(lua_State *L, int pos) {
+int luajs_popvar(lua_State *L, int pos) {
   PEEK_SelfTypedPointerData(pos);
   return data->ptr;
 }

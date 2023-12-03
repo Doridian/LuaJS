@@ -15,7 +15,7 @@ You'll need emscripten and NodeJS installed. If you're running a system that sup
 Build instructions
 ------------------
 
-Run `npm install && npm run build` then you have the compiled files in the dist folder.
+Run `npm install && npm run clean && npm run build` then you have the compiled files in the dist folder.
 
 Usage of Lua from JavaScript
 ----------------------------

@@ -46,7 +46,7 @@ int luajs_jsobject__index(lua_State *L) {
 
   GET_SelfTypedPointerData();
 
-  jslua_getmetatable(L, data->type);
+  luajs_getmetatable(L, data->type);
   lua_pushstring(L, idx);
 
   lua_rawget(L, -2);
@@ -104,7 +104,7 @@ int luajs_jsobject_toTable(lua_State *L) {
 
         Module.__pushVar($0, idx);
         Module.__pushVar($0, obj[idx]);
-        Module.__luaNative.lua_rawseti($0, -3);
+        Module.__luaNative.lua_rawset($0, -3);
       }
     },
     L, data->ptr);
