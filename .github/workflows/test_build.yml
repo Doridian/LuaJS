@@ -32,9 +32,7 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Set up Emscripten
         uses: mymindstorm/setup-emsdk@v13 
-      - name: Lint
-        run: npm run lint
-      - name: Build
-        run: npm run build
-      - name: Test
-        run: npm run testOnly
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run testOnly
