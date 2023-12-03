@@ -1,8 +1,8 @@
 #include "definitions.h"
 
-#include "jslua_eval.h"
+#include "luajs_eval.h"
 
-int jslua_call(lua_State *L, int argcount) {
+int luajs_call(lua_State *L, int argcount) {
   int stack = lua_gettop(L) - (argcount + 1);
 
   int errindex = -argcount - 2;
@@ -22,11 +22,11 @@ int jslua_call(lua_State *L, int argcount) {
   return stack_len;
 }
 
-int jslua_execute(lua_State *L, char *str, size_t len, char *name) {
+int luajs_execute(lua_State *L, char *str, size_t len, char *name) {
   luaL_loadbuffer(L, str, len, name);
   if (lua_isstring(L, -1)) {
     return -1;
   }
 
-  return jslua_call(L, 0);
+  return luajs_call(L, 0);
 }

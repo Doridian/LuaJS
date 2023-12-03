@@ -129,7 +129,7 @@ declare var global: unknown;
             case LuaTypes.string:
                 return luaNative!.js_tostring(state, pos);
             case LuaTypes.table:
-                const tbl = new LuaTable(state, luaNative!.jslua_toref(state, pos));
+                const tbl = new LuaTable(state, luaNative!.luajs_toref(state, pos));
                 if (convertArgs) {
                     const ret = tbl.toObject(true, true);
                     tbl.unref();
@@ -137,9 +137,9 @@ declare var global: unknown;
                 }
                 return tbl;
             case LuaTypes.userdata:
-                return getVarByRef(luaNative!.jslua_popvar(state, pos));
+                return getVarByRef(luaNative!.luajs_popvar(state, pos));
             case LuaTypes.function:
-                const ret = new LuaFunction(state, luaNative!.jslua_toref(state, pos));
+                const ret = new LuaFunction(state, luaNative!.luajs_toref(state, pos));
                 if (convertArgs) {
                     return ret.getClosure();
                 }
@@ -148,7 +148,7 @@ declare var global: unknown;
                 if (convertArgs) {
                     return undefined;
                 }
-                return new LuaReference(state, luaNative!.jslua_toref(state, pos));
+                return new LuaReference(state, luaNative!.luajs_toref(state, pos));
         }
     }
 
@@ -185,15 +185,15 @@ declare var global: unknown;
                 }
                 break;
             case "function":
-                luaNative!.jslua_pushvar(state, luaGetVarPtr(arg), LuaJSDataTypes.function);
+                luaNative!.luajs_pushvar(state, luaGetVarPtr(arg), LuaJSDataTypes.function);
                 break;
             default:
                 if (arg instanceof LuaReference) {
                     arg.push(state);
                 } else if (arg instanceof Array) {
-                    luaNative!.jslua_pushvar(state, luaGetVarPtr(arg), LuaJSDataTypes.array);
+                    luaNative!.luajs_pushvar(state, luaGetVarPtr(arg), LuaJSDataTypes.array);
                 } else {
-                    luaNative!.jslua_pushvar(state, luaGetVarPtr(arg), LuaJSDataTypes.object);
+                    luaNative!.luajs_pushvar(state, luaGetVarPtr(arg), LuaJSDataTypes.object);
                 }
                 break;
         }
@@ -201,7 +201,7 @@ declare var global: unknown;
 
     Module.__luaCallFunctionPointer = function luaCallFunctionPointer(funcPtr: EmscriptenPointer, state: EmscriptenPointer, stackSize: number, convertArgs: boolean, callWithNew: boolean) {
         try {
-            const func = getVarByRef(funcPtr) as JSLuaFunction;
+            const func = getVarByRef(funcPtr) as luajsFunction;
             let variables: unknown[];
             let variablesRaw: unknown[];
             let funcThis: unknown | undefined;
@@ -231,20 +231,20 @@ declare var global: unknown;
 
     function initializeCFuncs() {
         luaNative = importFromC([
-            ["jslua_alloc_int", "number", []],
-            ["jslua_alloc_size_t", "number", []],
-            ["jslua_call", "number", ["number", "number"], { async: true }],
-            ["jslua_delete_state", "", ["number"]],
-            ["jslua_execute", "number", ["number", "number", "number", "number"], { async: true }],
-            ["jslua_get_state_global", "number", ["number"]],
-            ["jslua_new_state", "number", []],
-            ["jslua_popvar", "", ["number", "number"]],
-            ["jslua_pushref", "", ["number", "number"]],
-            ["jslua_pushvar", "", ["number", "number", "number"]],
-            ["jslua_read_int", "number", ["number"]],
-            ["jslua_read_size_t", "number", ["number"]],
-            ["jslua_toref", "number", ["number", "number"]],
-            ["jslua_unref", "", ["number", "number"]],
+            ["luajs_alloc_int", "number", []],
+            ["luajs_alloc_size_t", "number", []],
+            ["luajs_call", "number", ["number", "number"], { async: true }],
+            ["luajs_delete_state", "", ["number"]],
+            ["luajs_execute", "number", ["number", "number", "number", "number"], { async: true }],
+            ["luajs_get_state_global", "number", ["number"]],
+            ["luajs_new_state", "number", []],
+            ["luajs_popvar", "", ["number", "number"]],
+            ["luajs_pushref", "", ["number", "number"]],
+            ["luajs_pushvar", "", ["number", "number", "number"]],
+            ["luajs_read_int", "number", ["number"]],
+            ["luajs_read_size_t", "number", ["number"]],
+            ["luajs_toref", "number", ["number", "number"]],
+            ["luajs_unref", "", ["number", "number"]],
 
             ["lua_createtable", "", ["number"]],
             ["lua_getmetatable", "number", ["number", "number"]],
@@ -273,16 +273,16 @@ declare var global: unknown;
         };
 
         luaNative!.js_pop_ref = function js_pop_ref(state: number) {
-            const ref = luaNative!.jslua_toref(state, -1);
+            const ref = luaNative!.luajs_toref(state, -1);
             luaNative!.js_drop(state, 1);
             return ref;
         };
 
         luaNative!.js_tostring = function js_tostring(state: number, i: number): string {
-            const lenC = luaNative!.jslua_alloc_size_t();
+            const lenC = luaNative!.luajs_alloc_size_t();
             try {
                 const strC = luaNative!.lua_tolstring(state, i, lenC);
-                const strLen = luaNative!.jslua_read_size_t(lenC);
+                const strLen = luaNative!.luajs_read_size_t(lenC);
                 const strJS = UTF8ToString(strC, strLen);
                 return strJS;
             } finally {
@@ -291,10 +291,10 @@ declare var global: unknown;
         };
 
         luaNative!.js_tonumber = function js_tonumber(state, i) {
-            const isNumberC = luaNative!.jslua_alloc_int();
+            const isNumberC = luaNative!.luajs_alloc_int();
             try {
                 const num = luaNative!.lua_tonumberx(state, i, isNumberC);
-                const isNumber = luaNative!.jslua_read_int(isNumberC);
+                const isNumber = luaNative!.luajs_read_int(isNumberC);
                 if (!isNumber) {
                     throw new Error("Not a number");
                 }
@@ -326,7 +326,7 @@ declare var global: unknown;
             return;
         }
 
-        luaNative!.jslua_unref(state, index);
+        luaNative!.luajs_unref(state, index);
         delete luaStateTable[stateGlobal]!.refArray[index];
     }
 
@@ -346,7 +346,7 @@ declare var global: unknown;
         protected refObj: RefObject
         stateGlobal: number;
         constructor(protected state: number, index: number) {
-            const stateGlobal = luaNative!.jslua_get_state_global(state);
+            const stateGlobal = luaNative!.luajs_get_state_global(state);
             this.refObj = {
                 state,
                 stateGlobal,
@@ -372,7 +372,7 @@ declare var global: unknown;
             if (state && state !== this.refObj.state) {
                 throw new Error("Wrong Lua state");
             }
-            luaNative!.jslua_pushref(this.refObj.state!, this.refObj.index!);
+            luaNative!.luajs_pushref(this.refObj.state!, this.refObj.index!);
         }
 
         getmetatable() {
@@ -409,7 +409,7 @@ declare var global: unknown;
                 }
             }
 
-            const stack = await luaNative!.jslua_call(this.state, args.length);
+            const stack = await luaNative!.luajs_call(this.state, args.length);
             const ret = decodeStack(this.state, Math.abs(stack));
             if (stack < 0) {
                 throw new LuaError(ret[0] as string);
@@ -517,8 +517,8 @@ declare var global: unknown;
         public refArray: Record<number, RefObject>;
         public readyPromise: Promise<void>;
         constructor() {
-            this.state = luaNative!.jslua_new_state();
-            this.stateGlobal = luaNative!.jslua_get_state_global(this.state);
+            this.state = luaNative!.luajs_new_state();
+            this.stateGlobal = luaNative!.luajs_get_state_global(this.state);
             this.refArray = {};
             luaStateTable[this.stateGlobal] = this;
 
@@ -538,7 +538,7 @@ declare var global: unknown;
 
         close() {
             this.unrefAll();
-            luaNative!.jslua_delete_state(this.state!);
+            luaNative!.luajs_delete_state(this.state!);
             delete luaStateTable[this.stateGlobal!];
 
             this.state = undefined;
@@ -557,7 +557,7 @@ declare var global: unknown;
             let stack;
             try {
                 stringToUTF8(code, codeC, codeLen + 1);
-                stack = await luaNative!.jslua_execute(this.state!, codeC, codeLen, blockNameC);
+                stack = await luaNative!.luajs_execute(this.state!, codeC, codeLen, blockNameC);
             } finally {
                 Module._free(codeC);
                 Module._free(blockNameC);

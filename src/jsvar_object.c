@@ -46,7 +46,7 @@ int luajs_jsobject__index(lua_State *L) {
 
   GET_SelfTypedPointerData();
 
-  jslua_getmetatable(L, data->type);
+  luajs_getmetatable(L, data->type);
   lua_pushstring(L, idx);
 
   lua_rawget(L, -2);
