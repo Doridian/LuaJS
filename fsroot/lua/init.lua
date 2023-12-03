@@ -167,6 +167,7 @@ local function fetch_searcher(extension, is_native)
 	end
 end
 
-package.searchers[#package.searchers + 1] = fetch_searcher(".lua", false)
-package.searchers[#package.searchers + 1] = fetch_searcher(".so", true)
-package.searchers[#package.searchers + 1] = fetch_searcher(".wasm", true)
+table.insert(package.searchers, fetch_searcher(".lua", false))
+table.insert(package.searchers, fetch_searcher(".so", true))
+table.insert(package.searchers, fetch_searcher(".wasm", true))
+
