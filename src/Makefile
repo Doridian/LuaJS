@@ -2,12 +2,8 @@
 
 LUA_SRC=../lua
 
-TSC=npx tsc
-
 CFLAGS=-O3 -flto -I$(LUA_SRC) -Wall $(SYSCFLAGS) $(MYCFLAGS)
 LDFLAGS=-O3 -flto
-TSFLAGS=
-
 
 LIBS= $(SYSLIBS) $(MYLIBS)
 
@@ -72,9 +68,6 @@ default: all
 all: $(ALL_T)
 
 o: $(ALL_O)
-
-lua_interface.js: lua_interface.ts
-	$(TSC) $(TSFLAGS) lua_interface.ts
 
 $(BINARY_T): $(LUA_A) lua_interface.js $(ALL_O)
 	$(CC)  -o $@ $(LDFLAGS) $(LIB_O) $(BINARY_O) $(LUA_A) $(LIBS) $(BINARY_ARGS)
