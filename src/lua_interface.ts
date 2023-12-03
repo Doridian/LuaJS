@@ -115,7 +115,7 @@ declare var global: unknown;
         }
 
         luaPassedVars.delete(varPtr);
-        luaPassedVarsMap.delete(ptr[2]);
+        luaPassedVarsMap.delete(ptr[0]);
     };
 
     function decodeSingle(state: EmscriptenPointer, pos: number, convertArgs = false): unknown {
@@ -515,14 +515,20 @@ declare var global: unknown;
         private stateGlobal: number | undefined;
 
         public refArray: Record<number, RefObject>;
-        public readyPromise: Promise<void>;
         constructor() {
+            this.refArray = {};
+        }
+
+        async open() {
+            if (this.state) {
+                throw new Error("Lua state already open");
+            }
+
             this.state = luaNative!.luajs_new_state();
             this.stateGlobal = luaNative!.luajs_get_state_global(this.state);
-            this.refArray = {};
             luaStateTable[this.stateGlobal] = this;
 
-            this.readyPromise = this.__run("dofile('/lua/init.lua')", '/lua/init.lua').then(() => undefined);
+            await this.run("dofile('/lua/init.lua')", '/lua/init.lua');
         }
 
         getTop() {
@@ -546,11 +552,6 @@ declare var global: unknown;
         }
 
         async run(code: string, blockName?: string) {
-            await this.readyPromise;
-            return await this.__run(code, blockName);
-        }
-
-        async __run(code: string, blockName?: string) {
             const codeLen = lengthBytesUTF8(code);
             const codeC = mustMalloc(codeLen + 1);
             const blockNameC = stringToNewUTF8(blockName || 'input');
@@ -649,7 +650,7 @@ declare var global: unknown;
     Module.newState = async () => {
         await readyPromise;
         const L = new LuaState();
-        await L.readyPromise;
+        await L.open();
         return L;
     }
 
