@@ -1,4 +1,4 @@
-#ifndef _JSVAR_H_INCLUDED
+#pragma once
 
 void luajs_jsvar_init(lua_State *L);
 
@@ -11,6 +11,3 @@ int luajs_jsvar__is_javascript(lua_State *L);
 int luajs_jsvar__gc(lua_State *L);
 int luajs_jsvar__eq(lua_State *L);
 int luajs_jsvar_jstype(lua_State *L);
-
-#define _JSVAR_H_INCLUDED
-#endif

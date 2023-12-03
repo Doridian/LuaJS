@@ -1,4 +1,4 @@
-#ifndef _DEFINITIONS_H_INCLUDED
+#pragma once
 
 #include <string.h>
 
@@ -19,6 +19,3 @@ typedef struct TypedPointerData {
   int type;
   int ptr;
 } TypedPointerData;
-
-#define _DEFINITIONS_H_INCLUDED
-#endif

@@ -1,4 +1,4 @@
-#ifndef _JSVAR_DEFINITIONS_H_INCLUDED
+#pragma once
 
 #define PEEK_TypedPointerData(INDEX, VAR)                                      \
   if (!lua_isuserdata(L, INDEX)) {                                             \
@@ -14,6 +14,3 @@
 #define PEEK_SelfTypedPointerData(INDEX) PEEK_TypedPointerData(INDEX, data)
 
 #define GET_SelfTypedPointerData() GET_TypedPointerData(1, data)
-
-#define _JSVAR_DEFINITIONS_H_INCLUDED
-#endif
