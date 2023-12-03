@@ -1,9 +1,7 @@
-'use strict';
+import test from 'node:test';
+import assert from 'node:assert';
 
-const test = require('node:test');
-const assert = require('node:assert');
-
-const LuaJS = require('../util/loader.js');
+import LuaJS from '../util/loader.ts';
 
 function convertBack(ret) {
     return [ret[0], ret[1].toObject()];
