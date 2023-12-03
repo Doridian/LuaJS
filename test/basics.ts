@@ -25,6 +25,6 @@ test('Can pass JS types to Lua correctly', async () => {
     assert.deepEqual(await func(13), ['number', 13]);
     assert.deepEqual(await func([1,2,3]), ['userdata', [1,2,3]]);
 
-    //assert.deepEqual(convertBack(await funcConvert([1,2,3])), ['table', { '1': 1, '2': 2, '3': 3 }]);
+    assert.deepEqual(convertBack(await funcConvert([1,2,3])), ['table', [1,2,3]]);
     assert.deepEqual(convertBack(await funcConvert({'a': 1, 'b': '2', 'c': true})), ['table', {'a': 1, 'b': '2', 'c': true}]);
 });

@@ -8,6 +8,8 @@ declare var global: unknown;
         _GLOBAL = global;
     }
 
+    const UNKNOWN_LUA_REFERENCE = Symbol("UNKNOWN_LUA_REFERENCE");
+
     function mustMalloc(size: number): EmscriptenPointer {
         const ptr = Module._malloc(size);
         if (!ptr) {
@@ -439,33 +441,72 @@ declare var global: unknown;
         toObject(recurse: boolean, unrefAll: boolean, maxDepth: number = 10) {
             this.push();
             luaNative!.lua_pushnil(this.state);
-            const ret: Record<string, unknown> = {};
+
+            let isArray = true;
+            const retObj: Record<string, unknown> = {};
+            const retArray: unknown[] = [];
+
             while (luaNative!.lua_next(this.state, -2)) {
                 luaNative!.lua_pushvalue(this.state, -2);
-                const key = luaNative!.js_tostring(this.state, -1);
+
                 const value = decodeSingle(this.state, -2);
-                ret[key] = value;
+
+                if (isArray) {
+                    const keyNumeric = luaNative!.lua_tonumberx(this.state, -1, 0);
+                    if (keyNumeric > 0) {
+                        retArray[keyNumeric - 1] = value;
+                        luaNative!.js_drop(this.state, 2);
+                        continue;
+                    } else {
+                        isArray = false;
+                    }
+                }
+
+                const key = luaNative!.js_tostring(this.state, -1);
+                retObj[key] = value;
                 luaNative!.js_drop(this.state, 2);
             }
+
             luaNative!.js_drop(this.state, 1);
 
 
             if (recurse) {
                 maxDepth--;
 
-                for (const idx of Object.keys(ret)) {
-                    const val = ret[idx];
-                    if (val instanceof LuaTable && maxDepth > 0) {
-                        ret[idx] = val.toObject(true, unrefAll, maxDepth);
-                        val.unref();
-                    } else if (unrefAll && val instanceof LuaReference) {
-                        val.unref();
-                        delete ret[idx];
+                if (isArray) {
+                    for (let i = 0; i < retArray.length; i++) {
+                        const val = retArray[i];
+                        if (val instanceof LuaTable && maxDepth > 0) {
+                            retArray[i] = val.toObject(true, unrefAll, maxDepth);
+                            val.unref();
+                        } else if (unrefAll && val instanceof LuaReference) {
+                            val.unref();
+                            retArray[i] = UNKNOWN_LUA_REFERENCE;
+                        }
+                    }
+                } else {
+                    for (const idx of Object.keys(retObj)) {
+                        if (!retObj.hasOwnProperty(idx)) {
+                            continue;
+                        }
+
+                        const val = retObj[idx];
+                        if (val instanceof LuaTable && maxDepth > 0) {
+                            retObj[idx] = val.toObject(true, unrefAll, maxDepth);
+                            val.unref();
+                        } else if (unrefAll && val instanceof LuaReference) {
+                            val.unref();
+                            retObj[idx] = UNKNOWN_LUA_REFERENCE;
+                        }
                     }
                 }
             }
 
-            return ret;
+            if (isArray) {
+                return retArray;
+            }
+
+            return retObj;
         }
     }
 
