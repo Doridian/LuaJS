@@ -449,7 +449,18 @@ declare var global: unknown;
             while (luaNative!.lua_next(this.state, -2)) {
                 luaNative!.lua_pushvalue(this.state, -2);
 
-                const value = decodeSingle(this.state, -2);
+                let value = decodeSingle(this.state, -2);
+
+                if (recurse && maxDepth > 0 && value instanceof LuaTable) {
+                    const newValue = value.toObject(true, unrefAll, maxDepth - 1);
+                    value.unref();
+                    value = newValue;
+                }
+
+                if (unrefAll && value instanceof LuaReference) {
+                    value.unref();
+                    value = UNKNOWN_LUA_REFERENCE;
+                }
 
                 if (isArray) {
                     const keyNumeric = luaNative!.lua_tonumberx(this.state, -1, 0);
@@ -468,39 +479,6 @@ declare var global: unknown;
             }
 
             luaNative!.js_drop(this.state, 1);
-
-
-            if (recurse) {
-                maxDepth--;
-
-                if (isArray) {
-                    for (let i = 0; i < retArray.length; i++) {
-                        const val = retArray[i];
-                        if (val instanceof LuaTable && maxDepth > 0) {
-                            retArray[i] = val.toObject(true, unrefAll, maxDepth);
-                            val.unref();
-                        } else if (unrefAll && val instanceof LuaReference) {
-                            val.unref();
-                            retArray[i] = UNKNOWN_LUA_REFERENCE;
-                        }
-                    }
-                } else {
-                    for (const idx of Object.keys(retObj)) {
-                        if (!retObj.hasOwnProperty(idx)) {
-                            continue;
-                        }
-
-                        const val = retObj[idx];
-                        if (val instanceof LuaTable && maxDepth > 0) {
-                            retObj[idx] = val.toObject(true, unrefAll, maxDepth);
-                            val.unref();
-                        } else if (unrefAll && val instanceof LuaReference) {
-                            val.unref();
-                            retObj[idx] = UNKNOWN_LUA_REFERENCE;
-                        }
-                    }
-                }
-            }
 
             if (isArray) {
                 return retArray;
