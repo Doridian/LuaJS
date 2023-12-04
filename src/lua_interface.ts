@@ -632,6 +632,8 @@ declare var global: unknown;
         return L;
     }
 
+    Module.UNKNOWN_LUA_REFERENCE = UNKNOWN_LUA_REFERENCE;
+
     Module.__luaNative = luaNative!;
     Module.__pushVar = pushVar;
     Module.__getVarByRef = getVarByRef;

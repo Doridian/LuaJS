@@ -28,6 +28,7 @@ interface EmscriptenModule {
     Table: typeof LuaTable;
     Reference: typeof LuaReference;
     ready: Promise<unknown>;
+    UNKNOWN_LUA_REFERENCE: Symbol;
 }
 
 declare var Module: EmscriptenModule & EmscriptenLuaNative;
