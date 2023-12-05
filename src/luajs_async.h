@@ -1,3 +1,3 @@
 #pragma once
 
-int luajs_await(lua_State *L);
+int luajs_js_await(lua_State *L);

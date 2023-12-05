@@ -14,7 +14,7 @@ INSTALL_DEST=../dist
 
 LUA_A= $(LUA_SRC)/liblua.a
 
-LIB_O= luajs_interface.o jsvar.o luajs_async.o luajs_ref.o luajs_eval.o jsvar_object.o jsvar_array.o jsvar_function.o
+LIB_O= luajs_allochelpers.o luajs_interface.o jsvar.o luajs_async.o luajs_ref.o luajs_state.o luajs_eval.o jsvar_object.o jsvar_array.o jsvar_function.o
 
 BINARY_T=luajs.js
 BINARY_O=luajs.o

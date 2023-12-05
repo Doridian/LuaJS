@@ -30,3 +30,10 @@ int luajs_execute(lua_State *L, char *str, size_t len, char *name) {
 
   return luajs_call(L, 0);
 }
+
+int luajs_js_eval(lua_State *L) {
+  const char *str = lua_tostring(L, -1);
+  lua_pop(L, 1);
+  EM_ASM({ Module.__pushVar($0, eval(UTF8ToString($1))); }, L, str);
+  return 1;
+}

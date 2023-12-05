@@ -4,7 +4,7 @@
 #include "jsvar_definitions.h"
 
 
-EM_ASYNC_JS(int, luajs_await_int, (lua_State *state, int ref), {
+EM_ASYNC_JS(int, luajs_js_await_int, (lua_State *state, int ref), {
   const val = Module.__getVarByRef(ref);
   try {
     const result = await val;
@@ -16,9 +16,9 @@ EM_ASYNC_JS(int, luajs_await_int, (lua_State *state, int ref), {
   return 1;
 });
 
-int luajs_await(lua_State *L) {
+int luajs_js_await(lua_State *L) {
   GET_SelfTypedPointerData();
-  if (!luajs_await_int(L, data->ptr)) {
+  if (!luajs_js_await_int(L, data->ptr)) {
     lua_error(L);
   }
   return 1;
