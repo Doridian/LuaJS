@@ -14,7 +14,7 @@ lua_State *luajs_new_state() {
   lua_gc(L, LUA_GCSTOP, 0);       // stop GC during initialization
   luaL_openlibs(L);
 
-  // Load myself
+  // Load js
   lua_newtable(L);
 
   luaL_Reg reg_jsmain[] = {
@@ -30,7 +30,7 @@ lua_State *luajs_new_state() {
   luajs_jsvar_init(L);
 
   lua_setglobal(L, "js");
-  // END: Load myself
+  // END: Load js
 
   // Load js.global
   lua_getglobal(L, "js");
