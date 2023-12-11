@@ -10,10 +10,9 @@
 #include <lstate.h>
 
 lua_State *luajs_new_state() {
-  lua_State *L = luaL_newstate(); /* create state */
-  lua_gc(L, LUA_GCSTOP, 0);       /* stop collector during initialization */
-  luaL_openlibs(L);               /* open libraries */
-  lua_gc(L, LUA_GCRESTART, 0);
+  lua_State *L = luaL_newstate(); // create state
+  lua_gc(L, LUA_GCSTOP, 0);       // stop GC during initialization
+  luaL_openlibs(L);
 
   // Load myself
   lua_newtable(L);
@@ -42,6 +41,8 @@ lua_State *luajs_new_state() {
 
   lua_pop(L, 1);
   // END: Load js.global
+
+  lua_gc(L, LUA_GCRESTART, 0); // restart GC once initialization is done
 
   return L;
 }
