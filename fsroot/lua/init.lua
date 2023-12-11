@@ -94,25 +94,19 @@ end
 ---@param options { [string] : string }?
 ---@return boolean ok, string text
 local function fetch_text(url, options)
-	return pcall(function()
-		local req = global:fetch(url, options)
-		if not req then error("failed to fetch") end
-
-		local file = js.await(req)
-		if not file.ok then error("failed to fetch: "..file.status) end
-		return js.await(file:text())
-	end)
-end
-
----@param url string
----@return boolean, string? error
-local function file_exists(url)
-	local req = global:fetch(url, { method = "HEAD" })
-	if not req then return false end
+	local req = global:fetch(url, options)
+	if not req then
+		error("failed to fetch")
+	end
 
 	local file = js.await(req)
-	if not file or not file.ok then return false, file.status end
-	return true
+	if not file.ok then
+		if file.status == 404 then
+			return nil
+		end
+		error("failed to fetch: " .. file.status)
+	end
+	return js.await(file:text())
 end
 
 ---Creates a searcher function that fetches modules from the web server
@@ -143,18 +137,15 @@ local function fetch_searcher(extension, is_native)
 		local checked_paths = {}
 		for path in search_path:gmatch("[^;]+") do
 			local test_path = path:gsub("%?", module_path)
-			local exists, err = file_exists(test_path)
-			if exists then
+			local text = fetch_text(test_path)
+			if text then
 				if is_native then
 					error("Cannot load native modules from the web yet")
 					-- return package.loadlib(test_path, "luaopen_"..module:gsub("%.", "_"))
 				else
-					local ok, text = fetch_text(test_path)
-					if ok then
-						local ok, err = load(text, "@"..test_path)
-						return ok or ("Could not load: "..(err or "Unknown error"))
-					else
-						return "Failed to fetch: "..text
+					local ok, err = load(text, "@"..test_path)
+					if not ok then
+						error("Could not load: "..(err or "Unknown error"))
 					end
 				end
 			end
