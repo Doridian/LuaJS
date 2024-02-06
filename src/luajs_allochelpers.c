@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "definitions.h"
 
 int* luajs_alloc_int() {
