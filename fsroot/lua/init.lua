@@ -147,7 +147,9 @@ local function fetch_searcher(extension, is_native)
 					if not ok then
 						error("Could not load: "..(err or "Unknown error"))
 					end
-				end
+
+                    return ok
+                end
 			end
 
 			table.insert(checked_paths, test_path)
