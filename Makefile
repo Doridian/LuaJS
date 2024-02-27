@@ -22,6 +22,7 @@ clean:
 
 install: build
 	cd src && make install
+	
 
 patch:
 	sh -e ./patch_lua_makefile.sh

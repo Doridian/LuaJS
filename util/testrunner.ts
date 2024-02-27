@@ -1,14 +1,13 @@
-import { spec, tap } from 'node:test/reporters';
+import { spec as Spec } from 'node:test/reporters';
 import { run } from 'node:test';
 import { globSync } from 'glob';
 
-let testReporter = tap;
-if (!process.env.CI) {
-    testReporter = spec as unknown as any; // NodeJS types are wrong, this works!
-}
 
 run({
     files: globSync("test/**/*.ts"),
 })
-.compose(testReporter)
+.on('test:fail', () => {
+    process.exitCode = 1;
+  })
+.compose(new Spec())
 .pipe(process.stdout);

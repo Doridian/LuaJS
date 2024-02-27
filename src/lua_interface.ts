@@ -1,5 +1,6 @@
 declare var global: unknown;
 
+
 (function () {
     let _GLOBAL;
     if (typeof window !== 'undefined') {
@@ -391,7 +392,7 @@ declare var global: unknown;
     }
 
     class LuaFunction  extends LuaReference {
-        getClosure() {
+        getClosure(): (...args: unknown[]) => Promise<unknown[]> {
             return LuaFunction.prototype.call.bind(this);
         }
 

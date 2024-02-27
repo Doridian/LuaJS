@@ -3,7 +3,7 @@
         /*Visithttps://aka.ms/tsconfig.jsontoreadmoreaboutthisfile*/
 
         "target": "ES2021",
-        "module": "None",
+        "module": "CommonJS",
         "allowJs": false,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
@@ -27,7 +27,8 @@
         "noPropertyAccessFromIndexSignature": true,
         "allowUnusedLabels": false,
         "allowUnreachableCode": false,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "noEmit": true
     },
-    "include": ["src"],
+    "include": ["src", "util", "test"],
 }

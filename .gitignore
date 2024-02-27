@@ -1,7 +1,10 @@
 .vscode
 .DS_Store
 /dist
-/src/luajs.*
+/src/luajs.o
+/src/luajs.c
+/src/luajs.data
+/src/luajs.wasm
 !/src/luajs.c
 /src/*.[oa]
 /src/*.js
