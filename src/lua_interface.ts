@@ -175,10 +175,10 @@ declare var global: unknown;
                 luaNative!.lua_pushnumber(state, arg);
                 break;
             case "string":
-                const argLen = lengthBytesUTF8(arg);
+                const argLen = Module.lengthBytesUTF8(arg);
                 const argC = mustMalloc(argLen + 1);
                 try {
-                    stringToUTF8(arg, argC, argLen + 1);
+                    Module.stringToUTF8(arg, argC, argLen + 1);
                     luaNative!.lua_pushlstring(state, argC, argLen);
                 } finally {
                     Module._free(argC);
@@ -283,7 +283,7 @@ declare var global: unknown;
             try {
                 const strC = luaNative!.lua_tolstring(state, i, lenC);
                 const strLen = luaNative!.luajs_read_size_t(lenC);
-                const strJS = UTF8ToString(strC, strLen);
+                const strJS = Module.UTF8ToString(strC, strLen);
                 return strJS;
             } finally {
                 Module._free(lenC);
@@ -530,12 +530,12 @@ declare var global: unknown;
         }
 
         async run(code: string, blockName?: string) {
-            const codeLen = lengthBytesUTF8(code);
+            const codeLen = Module.lengthBytesUTF8(code);
             const codeC = mustMalloc(codeLen + 1);
-            const blockNameC = stringToNewUTF8(blockName || 'input');
+            const blockNameC = Module.stringToNewUTF8(blockName || 'input');
             let stack;
             try {
-                stringToUTF8(code, codeC, codeLen + 1);
+                Module.stringToUTF8(code, codeC, codeLen + 1);
                 stack = await luaNative!.luajs_execute(this.state!, codeC, codeLen, blockNameC);
             } finally {
                 Module._free(codeC);

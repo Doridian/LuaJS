@@ -6,14 +6,15 @@ interface EmscriptenModule {
     _malloc(size: number): EmscriptenPointer;
 }
 
-function lengthBytesUTF8(str: string): number;
-function stringToUTF8(str: string, ptr: EmscriptenPointer, maxBytes: number): void;
-function UTF8ToString(ptr: EmscriptenPointer, maxBytes?: number): string;
 function getValue(ptr: EmscriptenPointer, size: string, noSafe?: boolean): number;
-function stringToNewUTF8(str: string): EmscriptenPointer;
 
 // extensions
 interface EmscriptenModule {
+    stringToNewUTF8(str: string): EmscriptenPointer;
+    lengthBytesUTF8(str: string): number;
+    stringToUTF8(str: string, ptr: EmscriptenPointer, maxBytes: number): void;
+    UTF8ToString(ptr: EmscriptenPointer, maxBytes?: number): string;
+
     __luaRemoveVarPtr: (varPtr: number) => void;
     __luaCallFunctionPointer: (funcPtr: number, state: number, stackSize: number, convertArgs: boolean, callWithNew: boolean) => 1 | 0;
     __decodeSingle: (state: number, pos: number, convertArgs?: boolean) => unknown;

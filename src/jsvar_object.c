@@ -61,7 +61,7 @@ int luajs_jsobject__index(lua_State *L) {
 
   EM_ASM(
     {
-      const str = UTF8ToString($2);
+      const str = Module.UTF8ToString($2);
       const val = Module.__getVarByRef($1);
       Module.__pushVar($0, val[str]);
     },

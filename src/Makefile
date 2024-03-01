@@ -55,7 +55,8 @@ BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
 '_lua_tolstring',\
 '_lua_tonumberx',\
 '_lua_type'\
-]" -s EXPORTED_RUNTIME_METHODS=cwrap -s WASM=1 -s TOTAL_MEMORY=134217728 -s ASYNCIFY -s ALLOW_TABLE_GROWTH --pre-js lua_interface.js --preload-file "../fsroot/@/"
+]" -s EXPORTED_RUNTIME_METHODS=cwrap,stringToNewUTF8,lengthBytesUTF8,stringToUTF8,UTF8ToString \
+-s WASM=1 -s TOTAL_MEMORY=134217728 -s ASYNCIFY -s ALLOW_TABLE_GROWTH --pre-js lua_interface.js --preload-file "../fsroot/@/"
 
 BINARY_FILES=luajs.data luajs.wasm $(BINARY_T)
 
