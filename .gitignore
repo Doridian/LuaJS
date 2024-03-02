@@ -5,5 +5,6 @@
 !/src/luajs.c
 /src/*.[oa]
 /src/*.js
+/src/*.mjs
 /tmp
 node_modules

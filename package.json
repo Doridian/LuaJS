@@ -2,7 +2,8 @@
   "name": "luajs",
   "version": "1.0.0",
   "description": "Bindings for C Lua to JavaScript with Emscripten and WebAssembly",
-  "main": "index.js",
+  "main": "index.mjs",
+  "type": "module",
   "scripts": {
     "clean": "emmake make clean",
     "build": "tsc && emmake make install",
