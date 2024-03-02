@@ -84,7 +84,10 @@ Using Lua in NodeJS
 The compiled module can be used in NodeJS as follows:
 
 ```js
-const LuaJS = require('./luajs.mjs');
+// Import local files (ES6 modules)
+import { LuaJS } from './luajs.mjs';
+// OR: Import local files (require / CommonJS)
+const { LuaJS } = require('../../Programming/LuaJS');
 LuaJS.newState().then(async (L) => {
     console.log(await L.run("return 42 + 69"));
 });

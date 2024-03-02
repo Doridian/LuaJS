@@ -2,11 +2,14 @@
 .DS_Store
 *.js
 *.mjs
+*.cjs
 *.d.mts
+*.d.cts
 /dist
 /src/luajs.*
 !/src/luajs.c
 !/src/luajs.d.mts
+!/src/luajs.d.cts
 /src/*.[oa]
 /tmp
 node_modules
