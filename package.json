@@ -4,10 +4,7 @@
   "files": [
     "README.md",
     "LICENSE",
-    "dist/luajs.wasm",
-    "dist/luajs.mjs",
-    "dist/luajs.d.cts",
-    "dist/luajs.d.mts",
+    "dist/*",
     "util/loader_mjs.mjs",
     "util/loader_mjs.d.mts",
     "util/loader_cjs.cjs",
