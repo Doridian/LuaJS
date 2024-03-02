@@ -4,7 +4,10 @@
   "files": [
     "README.md",
     "LICENSE",
-    "dist/*",
+    "dist/luajs.wasm",
+    "dist/luajs.mjs",
+    "dist/luajs.d.cts",
+    "dist/luajs.d.mts",
     "util/loader_mjs.mjs",
     "util/loader_mjs.d.mts",
     "util/loader_cjs.cjs",
@@ -21,7 +24,7 @@
   "type": "module",
   "scripts": {
     "clean": "emmake make clean && rm -rf ./dist && tsc --build --clean && cd src/ && tsc --build --clean && cd ..",
-    "build": "mkdir -p dist && cp -f src/luajs.d.ts dist/luajs.d.mts && cp -f src/luajs.d.ts dist/luajs.d.cts && cd src/ && tsc && cd .. && tsc && emmake make install",
+    "build": "mkdir -p dist && cp -f LICENSE dist/LICENSE && cp -f src/luajs.d.ts dist/luajs.d.mts && cp -f src/luajs.d.ts dist/luajs.d.cts && cd src/ && tsc && cd .. && tsc && emmake make install",
     "lint": "echo 'Lint not set up yet'",
     "fmt": "echo 'Format not set up yet'",
     "test": "npm run build && npm run testOnly",
