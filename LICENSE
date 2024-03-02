@@ -38,7 +38,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 
-This software also uses Emscripten, which uses musl-libc, also covered by the MIT License (https://github.com/emscripten-core/emscripten/blob/e05e72d9c49fe15578e73934ce525a894d1b712a/system/lib/libc/musl/COPYRIGHT):
+This software also uses musl-libc (via Emscripten), also covered by the MIT License (https://github.com/emscripten-core/emscripten/blob/e05e72d9c49fe15578e73934ce525a894d1b712a/system/lib/libc/musl/COPYRIGHT):
 
 Copyright © 2005-2020 Rich Felker, et al.
 
