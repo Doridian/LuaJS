@@ -63,9 +63,8 @@ Below is an example HTML document that enables Lua scripts for the entire page:
     <head>
         <script type="module" src="dist/luajs.mjs"></script>
         <script type="module">
-            const LuaJS = {};
             import emscriptenInit from 'dist/luajs.mjs';
-            await emscriptenInit(LuaJS);
+            const LuaJS = await emscriptenInit(LuaJS);
 
             LuaJS.newState().then(async (L) => {
                 await L.enableLuaScriptTags(document);
