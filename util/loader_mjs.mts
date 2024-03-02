@@ -1,7 +1,5 @@
-import { default as moduleCtor, LuaJS } from '../dist/luajs.mjs';
+import { default as moduleCtor } from '../dist/luajs.mjs';
 
-const Module = {};
-await moduleCtor(Module);
-const LuaJSInstance = Module as LuaJS;
-export { LuaJSInstance as LuaJS };
+const LuaJS = await moduleCtor();
+export { LuaJS };
 export type { LuaTable, LuaFunction, LuaState } from '../dist/luajs.mjs';

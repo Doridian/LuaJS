@@ -8,8 +8,7 @@
 /dist
 /src/luajs.*
 !/src/luajs.c
-!/src/luajs.d.mts
-!/src/luajs.d.cts
+!/src/luajs.d.ts
 /src/*.[oa]
 /tmp
 node_modules
