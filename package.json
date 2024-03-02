@@ -1,6 +1,14 @@
 {
-  "name": "luajs",
-  "version": "1.0.0",
+  "name": "@doridian/luajs",
+  "private": false,
+  "files": [
+    "README.md",
+    "LICENSE",
+    "dist/*",
+    "util/loader.mjs",
+    "util/loader.d.mts"
+  ],
+  "version": "1.0.1",
   "description": "Bindings for C Lua to JavaScript with Emscripten and WebAssembly",
   "main": "util/loader.mjs",
   "type": "module",
@@ -10,7 +18,8 @@
     "lint": "echo 'Lint not set up yet'",
     "fmt": "echo 'Format not set up yet'",
     "test": "npm run build && npm run testOnly",
-    "testOnly": "node ./util/testrunner.mjs"
+    "testOnly": "node ./util/testrunner.mjs",
+    "prepublishOnly": "npm run build"
   },
   "author": "Doridian",
   "license": "MIT",

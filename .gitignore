@@ -1,11 +1,12 @@
 .vscode
 .DS_Store
+*.js
+*.mjs
+*.d.mts
 /dist
 /src/luajs.*
 !/src/luajs.c
 !/src/luajs.d.mts
 /src/*.[oa]
-*.js
-*.mjs
 /tmp
 node_modules
