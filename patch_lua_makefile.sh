@@ -35,7 +35,7 @@ s~^(MYCFLAGS=.*)-DLUA_USE_LINUX -DLUA_USE_READLINE$~\1 -flto -DLUA_CPATH_DEFAULT
 s~-march=native~~g;
 
 # Replace O2 with O3
-s/-O2/-Os/g;
+s/-O2/-O3/g;
 
 # Remove CWARNGCC from CWARNS
 s/^(CWARNS=.*)\$\(CWARNGCC\)$/\1/;
