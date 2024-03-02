@@ -21,7 +21,7 @@ Usage of Lua from JavaScript
 ----------------------------
 
 ```javascript
-Module.newState().then(async (L) => {
+LuaJS.newState().then(async (L) => {
     let value;
     value = await L.run("return 1+2"); //value == [3]
 
@@ -61,9 +61,13 @@ Below is an example HTML document that enables Lua scripts for the entire page:
 <!DOCTYPE html>
 <html>
     <head>
-        <script type="text/javascript" src="luajs.js"></script>
-        <script type="text/javascript">
-            Module.newState().then(async (L) => {
+        <script type="module" src="dist/luajs.mjs"></script>
+        <script type="module">
+            const LuaJS = {};
+            import emscriptenInit from 'dist/luajs.mjs';
+            await emscriptenInit(LuaJS);
+
+            LuaJS.newState().then(async (L) => {
                 await L.enableLuaScriptTags(document);
             });
         </script>
@@ -80,7 +84,7 @@ Using Lua in NodeJS
 The compiled module can be used in NodeJS as follows:
 
 ```js
-const LuaJS = require('./luajs.js');
+const LuaJS = require('./luajs.mjs');
 LuaJS.newState().then(async (L) => {
     console.log(await L.run("return 42 + 69"));
 });

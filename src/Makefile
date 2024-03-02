@@ -16,7 +16,7 @@ LUA_A= $(LUA_SRC)/liblua.a
 
 LIB_O= luajs_allochelpers.o luajs_interface.o jsvar.o luajs_async.o luajs_ref.o luajs_state.o luajs_eval.o jsvar_object.o jsvar_array.o jsvar_function.o
 
-BINARY_T=luajs.js
+BINARY_T=luajs.mjs
 BINARY_O=luajs.o
 BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
 '_main',\
@@ -56,9 +56,9 @@ BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
 '_lua_tonumberx',\
 '_lua_type'\
 ]" -s EXPORTED_RUNTIME_METHODS=cwrap,stringToNewUTF8,lengthBytesUTF8,stringToUTF8,UTF8ToString \
--s WASM=1 -s TOTAL_MEMORY=134217728 -s ASYNCIFY -s ALLOW_TABLE_GROWTH --pre-js lua_interface.js --preload-file "../fsroot/@/"
+-s WASM=1 -s TOTAL_MEMORY=134217728 -s ASYNCIFY -s ALLOW_TABLE_GROWTH -s MODULARIZE -s EXPORT_ES6 -s USE_ES6_IMPORT_META --pre-js lua_interface.js --embed-file "../fsroot/@/"
 
-BINARY_FILES=luajs.data luajs.wasm $(BINARY_T)
+BINARY_FILES=luajs.wasm $(BINARY_T)
 
 ALL_O= $(LIB_O) $(BINARY_O)
 ALL_T= $(BINARY_T)
@@ -74,7 +74,7 @@ $(BINARY_T): $(LUA_A) lua_interface.js $(ALL_O)
 	$(CC)  -o $@ $(LDFLAGS) $(LIB_O) $(BINARY_O) $(LUA_A) $(LIBS) $(BINARY_ARGS)
 
 clean:
-	$(RM) $(ALL_T) $(ALL_O) $(BINARY_FILES)
+	$(RM) $(ALL_T) $(ALL_O) $(BINARY_FILES) luajs.js
 
 install: $(BINARY_T)
 	$(MKDIR) $(INSTALL_DEST)

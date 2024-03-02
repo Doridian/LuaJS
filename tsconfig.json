@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
         /*Visithttps://aka.ms/tsconfig.jsontoreadmoreaboutthisfile*/
-
         "target": "ES2021",
-        "module": "None",
+        "module": "Node16",
+        "moduleResolution": "Node16",
         "allowJs": false,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
@@ -27,7 +27,7 @@
         "noPropertyAccessFromIndexSignature": true,
         "allowUnusedLabels": false,
         "allowUnreachableCode": false,
-        "skipLibCheck": true
+        "skipLibCheck": true,
     },
-    "include": ["src"],
+    "include": ["util", "test"],
 }

@@ -3,7 +3,9 @@
 /dist
 /src/luajs.*
 !/src/luajs.c
+!/src/luajs.d.mts
 /src/*.[oa]
-/src/*.js
+*.js
+*.mjs
 /tmp
 node_modules

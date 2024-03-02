@@ -2,21 +2,21 @@
   "name": "luajs",
   "version": "1.0.0",
   "description": "Bindings for C Lua to JavaScript with Emscripten and WebAssembly",
-  "main": "index.js",
+  "main": "util/loader.mjs",
+  "type": "module",
   "scripts": {
     "clean": "emmake make clean",
-    "build": "tsc && emmake make install",
+    "build": "mkdir -p dist && cp -f src/luajs.d.mts dist/ && cd src/ && tsc && cd .. && tsc && emmake make install",
     "lint": "echo 'Lint not set up yet'",
     "fmt": "echo 'Format not set up yet'",
     "test": "npm run build && npm run testOnly",
-    "testOnly": "node --import tsx ./util/testrunner.ts"
+    "testOnly": "node ./util/testrunner.mjs"
   },
   "author": "Doridian",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.10.2",
     "glob": "^10.3.10",
-    "tsx": "^4.6.2",
     "typescript": "^5.3.2"
   }
 }
