@@ -17,26 +17,26 @@ fi
 
 $sed -r '
 # Replace AR with ARR
-s/\$\(AR\)/$(ARR)/g; t
+s/\$\(AR\)/$(ARR)/g;
 
 # Remove some variables
-s/^(CC|RANLIB|RM)=/#\0/; t
+s/^(CC|RANLIB|RM)=/#\0/;
 
 # Replace AR assignment
-s/^AR= *ar/ARR=$(AR)/; t
+s/^AR= *ar/ARR=$(AR)/;
 
 # Remove -lreadline from MYLIBS
-s/^(MYLIBS=.*)-lreadline$/\1/; t
+s/^(MYLIBS=.*)-lreadline$/\1/;
 
 # Remove -DLUA_USE_READLINE from MYCFLAGS, add -flto
-s~^(MYCFLAGS=.*)-DLUA_USE_LINUX -DLUA_USE_READLINE$~\1 -flto -DLUA_CPATH_DEFAULT="\\"/lua/modules/?.so\\"" -DLUA_PATH_DEFAULT="\\"/lua/modules/?.lua;/lua/modules/?/init.lua\\""~; t
+s~^(MYCFLAGS=.*)-DLUA_USE_LINUX -DLUA_USE_READLINE$~\1 -flto -DLUA_CPATH_DEFAULT="\\"/lua/modules/?.so\\"" -DLUA_PATH_DEFAULT="\\"/lua/modules/?.lua;/lua/modules/?/init.lua\\""~;
 
 # Remove -march=native
-s~-march=native~~g; t
+s~-march=native~~g;
 
 # Replace O2 with O3
-s/-O2/-O3/g; t
+s/-O2/-Os/g;
 
 # Remove CWARNGCC from CWARNS
-s/^(CWARNS=.*)\$\(CWARNGCC\)$/\1/; t
+s/^(CWARNS=.*)\$\(CWARNGCC\)$/\1/;
 ' "$PATCH_FILE" > "$PATCH_FILE_TARGET"

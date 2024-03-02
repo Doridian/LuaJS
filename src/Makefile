@@ -2,8 +2,8 @@
 
 LUA_SRC=../lua
 
-CFLAGS=-O3 -flto -I$(LUA_SRC) -Wall $(SYSCFLAGS) $(MYCFLAGS)
-LDFLAGS=-O3 -flto
+CFLAGS=-Os -flto -I$(LUA_SRC) -Wall $(SYSCFLAGS) $(MYCFLAGS)
+LDFLAGS=-O -flto
 
 LIBS= $(SYSLIBS) $(MYLIBS)
 
