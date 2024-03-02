@@ -58,7 +58,7 @@ BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
 ]" -s EXPORTED_RUNTIME_METHODS=cwrap,stringToNewUTF8,lengthBytesUTF8,stringToUTF8,UTF8ToString \
 -s WASM=1 -s TOTAL_MEMORY=134217728 -s ASYNCIFY -s ALLOW_TABLE_GROWTH -s MODULARIZE -s EXPORT_ES6 -s USE_ES6_IMPORT_META --pre-js lua_interface.js --embed-file "../fsroot/@/"
 
-BINARY_FILES=luajs.data luajs.wasm $(BINARY_T)
+BINARY_FILES=luajs.wasm $(BINARY_T)
 
 ALL_O= $(LIB_O) $(BINARY_O)
 ALL_T= $(BINARY_T)

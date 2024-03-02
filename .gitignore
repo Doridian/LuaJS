@@ -3,6 +3,7 @@
 /dist
 /src/luajs.*
 !/src/luajs.c
+!/src/luajs.d.mts
 /src/*.[oa]
 /src/*.js
 /src/*.mjs

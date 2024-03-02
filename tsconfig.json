@@ -2,9 +2,11 @@
     "compilerOptions": {
         /*Visithttps://aka.ms/tsconfig.jsontoreadmoreaboutthisfile*/
 
-        "target": "ES2021",
-        "module": "None",
+        "target": "ES2022",
+        "module": "ES2022",
+        "moduleResolution": "Node",
         "allowJs": false,
+        "allowImportingTsExtensions": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "strict": true,
@@ -27,7 +29,8 @@
         "noPropertyAccessFromIndexSignature": true,
         "allowUnusedLabels": false,
         "allowUnreachableCode": false,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "noEmit": true,
     },
-    "include": ["src"],
+    "include": ["src", "util", "test"],
 }
