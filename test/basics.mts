@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 
-import { LuaJS } from '../util/loader.ts';
+import { LuaJS } from '../util/loader.mjs';
 import { LuaFunction, LuaTable } from '../dist/luajs.mjs';
 
 function convertBack(ret: unknown[]): [string, unknown] {

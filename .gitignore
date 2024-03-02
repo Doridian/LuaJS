@@ -5,7 +5,7 @@
 !/src/luajs.c
 !/src/luajs.d.mts
 /src/*.[oa]
-/src/*.js
-/src/*.mjs
+*.js
+*.mjs
 /tmp
 node_modules

@@ -3,7 +3,7 @@ import { run } from 'node:test';
 import { globSync } from 'glob';
 
 const runStream = run({
-    files: globSync("test/**/*.ts"),
+    files: globSync("test/**/*.mjs"),
 })
 let outputStream: {
     pipe: (stream: NodeJS.WritableStream) => void;
