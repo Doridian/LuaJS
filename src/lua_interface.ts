@@ -577,14 +577,20 @@ declare var global: unknown;
         async loadDocumentScripts(doc: Document) {
             const xPathResult = document.evaluate('//script[@type="text/lua"]', doc, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
 
+            const nodesToLoad: HTMLScriptElement[] = [];
             let node;
             while (node = xPathResult.iterateNext()) {
-                await this.__tryRunNode(node as HTMLScriptElement);
+                nodesToLoad.push(node as HTMLScriptElement);
+            }
+
+            for (const node of nodesToLoad) {
+                await this.__tryRunNode(node);
             }
         }
 
         listenForScripts(doc: Document) {
             const observer = new MutationObserver(async (mutations) => {
+                const nodesToLoad: HTMLScriptElement[] = [];
                 for (const mutation of mutations)  {
                     if (mutation.type !== "childList") {
                         continue;
@@ -603,8 +609,12 @@ declare var global: unknown;
                             continue;
                         }
 
-                        await this.__tryRunNode(node);
+                        nodesToLoad.push(node);
                     }
+                }
+
+                for (const node of nodesToLoad) {
+                    await this.__tryRunNode(node);
                 }
             });
 
@@ -624,7 +634,6 @@ declare var global: unknown;
     Module.Function = LuaFunction;
     Module.Table = LuaTable;
     Module.Reference = LuaReference;
-    Module.ready = readyPromise;
     Module.newState = async () => {
         await readyPromise;
         const L = new LuaState();
