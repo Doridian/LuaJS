@@ -3,9 +3,10 @@ interface LuaNativeFromC {
     luajs_alloc_size_t(): EmscriptenPointer;
     luajs_call(state: EmscriptenPointer, length: number): number;
     luajs_delete_state(state: EmscriptenPointer): void;
-    luajs_execute(state: EmscriptenPointer, codeC: number, codeLen: number, blockNameC: any): any;
+    luajs_execute(state: EmscriptenPointer, codeC: number, codeLen: number, blockNameC: any): unknown;
     luajs_get_state_global(state: EmscriptenPointer): number;
     luajs_new_state(): EmscriptenPointer;
+    luajs_noref(): number;
     luajs_popvar(state: EmscriptenPointer, pos: number): number;
     luajs_pushref(state: EmscriptenPointer, index: number): void;
     luajs_pushvar(state: EmscriptenPointer, arg1: any, func: number): void;
@@ -39,6 +40,8 @@ interface LuaNative extends LuaNativeFromC {
     js_tostring(state: EmscriptenPointer, pos: number): string;
     js_drop(state: EmscriptenPointer, arg1: number): void;
     js_pop_ref(state: EmscriptenPointer): number;
+
+    LUA_NOREF: number;
 }
 
 type EmscriptenLuaNative = {

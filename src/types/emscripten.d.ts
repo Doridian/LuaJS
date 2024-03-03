@@ -18,7 +18,7 @@ interface EmscriptenModule {
     __luaRemoveVarPtr: (varPtr: number) => void;
     __luaCallFunctionPointer: (funcPtr: number, state: number, stackSize: number, convertArgs: boolean, callWithNew: boolean) => 1 | 0;
     __decodeSingle: (state: number, pos: number, convertArgs?: boolean) => unknown;
-    __getVarByRef: (index: number) => any;
+    __getVarByRef: (index: number) => unknown;
     newState: () => Promise<LuaState>;
     __pushVar: (state: number, arg: any) => void;
     __onready: () => void;

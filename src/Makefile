@@ -29,6 +29,7 @@ BINARY_ARGS=-s EXPORTED_FUNCTIONS="[\
 '_luajs_execute',\
 '_luajs_get_state_global',\
 '_luajs_new_state',\
+'_luajs_noref',\
 '_luajs_popvar',\
 '_luajs_pushref',\
 '_luajs_pushvar',\
