@@ -10,7 +10,7 @@
     "util/loader_cjs.cjs",
     "util/loader_cjs.d.cts"
   ],
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Bindings for C Lua to JavaScript with Emscripten and WebAssembly",
   "main": "util/loader_cjs.cjs",
   "module": "util/loader_mjs.mjs",
