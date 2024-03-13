@@ -92,7 +92,7 @@ end
 
 ---@param url string
 ---@param options { [string] : string }?
----@return boolean ok, string text
+---@return string?
 local function fetch_text(url, options)
 	local req = global:fetch(url, options)
 	if not req then
@@ -140,8 +140,12 @@ local function fetch_searcher(extension, is_native)
 			local text = fetch_text(test_path)
 			if text then
 				if is_native then
-					error("Cannot load native modules from the web yet")
-					-- return package.loadlib(test_path, "luaopen_"..module:gsub("%.", "_"))
+					local lib, err = package.loadlib(test_path, "luaopen_"..module:gsub("%.so$", ""):gsub("%.", "_"))
+					if lib then
+						return lib
+					else
+						return "Failed to load lib "..test_path..": "..(err or "Unknown error")
+					end
 				else
 					local ok, err = load(text, "@"..test_path)
 					if not ok then

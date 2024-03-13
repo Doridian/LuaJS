@@ -29,7 +29,7 @@ s/^AR= *ar/ARR=$(AR)/;
 s/^(MYLIBS=.*)-lreadline$/\1/;
 
 # Remove -DLUA_USE_READLINE from MYCFLAGS, add -flto
-s~^(MYCFLAGS=.*)-DLUA_USE_LINUX -DLUA_USE_READLINE$~\1 -flto -DLUA_CPATH_DEFAULT="\\"/lua/modules/?.so\\"" -DLUA_PATH_DEFAULT="\\"/lua/modules/?.lua;/lua/modules/?/init.lua\\""~;
+s~^(MYCFLAGS=.*)-DLUA_USE_LINUX -DLUA_USE_READLINE$~\1 -DLUA_USE_DLOPEN -flto -DLUA_CPATH_DEFAULT="\\"/?.so;/lua/modules/?.so\\"" -DLUA_PATH_DEFAULT="\\"/?.lua;/?/init.lua;/lua/modules/?.lua;/lua/modules/?/init.lua\\""~;
 
 # Remove -march=native
 s~-march=native~~g;
