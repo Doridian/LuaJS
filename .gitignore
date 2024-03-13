@@ -5,7 +5,7 @@
 *.cjs
 *.d.mts
 *.d.cts
-/dist/
+/dist
 /src/luajs.*
 !/src/luajs.c
 !/src/luajs.d.ts
