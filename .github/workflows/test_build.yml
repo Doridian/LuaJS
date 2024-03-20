@@ -23,6 +23,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: 'true'
+      - run: node --version
+      - run: npm --version
       - name: Set up NodeJS
         uses: actions/setup-node@v4
         with:
