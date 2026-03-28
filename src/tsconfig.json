@@ -4,6 +4,7 @@
         "module": "None",
         "moduleResolution": "Node",
         "declaration": false,
+        "ignoreDeprecations": "6.0",
     },
     "include": ["."],
 }

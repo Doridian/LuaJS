@@ -28,7 +28,8 @@
         "noPropertyAccessFromIndexSignature": true,
         "allowUnusedLabels": false,
         "allowUnreachableCode": false,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "types": ["node"]
     },
     "include": ["util", "test"],
     "exclude": ["**/*.d.cts", "**/*.d.mts"]
